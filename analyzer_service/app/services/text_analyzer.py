@@ -1,11 +1,9 @@
 import logging
 import grpc
-
-import nltk
 import traceback
-
-# import spacy
-# import spacy.cli
+import spacy
+import nltk
+import spacy.cli
 from nltk.tokenize import word_tokenize
 from nltk.probability import FreqDist
 from bs4 import BeautifulSoup
@@ -22,8 +20,10 @@ class TextAnalyzerServicer(analyzer_pb2_grpc.AnalyzerServiceServicer):
 
     def __init__(self):
         """Initialize NLP tools and logger"""
-        # spacy.cli.download("en_core_web_sm")  # Ensure the spaCy model is downloaded
-        # self.spacy_nlp = spacy.load("en_core_web_sm")
+        spacy.cli.download("en_core_web_sm")  # Ensure the spaCy model is downloaded
+        self.spacy_nlp = spacy.load("en_core_web_sm")
+        nltk.download("punkt")  # Download the punkt tokenizer models
+
         logger.info("TextAnalyzerService initialized.")
 
     def Analyze(self, request, context):
@@ -33,12 +33,11 @@ class TextAnalyzerServicer(analyzer_pb2_grpc.AnalyzerServiceServicer):
             text = self._extract_text(soup)
             tokens = self._tokenize_and_clean_text(text)
             freq_dist = self._get_frequency_distribution(tokens)
-            # entities = self._extract_entities(text)
-            # entity_list = [
-            #     analyzer_pb2.Entity(type=key, names=value)
-            #     for key, value in entities.items()
-            # ]
-            entity_list = []
+            entities = self._extract_entities(text)
+            entity_list = [
+                analyzer_pb2.Entity(type=key, names=value)
+                for key, value in entities.items()
+            ]
             logger.info("Analysis completed successfully.")
             return analyzer_pb2.AnalyzeResponse(
                 frequency_distribution=dict(freq_dist), entities=entity_list
@@ -73,14 +72,14 @@ class TextAnalyzerServicer(analyzer_pb2_grpc.AnalyzerServiceServicer):
             logger.error(f"Error calculating frequency distribution: {e}")
             return FreqDist()
 
-    # def _extract_entities(self, text: str) -> dict:
-    #     """Extracts named entities using spaCy."""
-    #     try:
-    #         doc = self.spacy_nlp(text)
-    #         entities = {ent.label_: [] for ent in doc.ents}
-    #         for ent in doc.ents:
-    #             entities[ent.label_].append(ent.text)
-    #         return entities
-    #     except Exception as e:
-    #         logger.error(f"Error extracting entities: {e}")
-    #         return {}
+    def _extract_entities(self, text: str) -> dict:
+        """Extracts named entities using spaCy."""
+        try:
+            doc = self.spacy_nlp(text)
+            entities = {ent.label_: [] for ent in doc.ents}
+            for ent in doc.ents:
+                entities[ent.label_].append(ent.text)
+            return entities
+        except Exception as e:
+            logger.error(f"Error extracting entities: {e}")
+            return {}
