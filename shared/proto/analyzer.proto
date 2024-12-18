@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package analyzer;
+
+service AnalyzerService {
+  rpc AnalyzeContent (AnalyzeRequest) returns (AnalyzeResponse);
+}
+
+message AnalyzeRequest {
+  repeated string texts = 1;
+  repeated string headers = 2;
+  repeated string cta_buttons = 3;
+  repeated string meta_tags = 4;
+}
+
+message AnalyzeResponse {
+  string sentiment = 1; // positive, negative, neutral
+  repeated string keyword_suggestions = 2;
+  repeated string improved_headers = 3;
+  repeated string improved_cta = 4;
+  repeated string seo_recommendations = 5;
+}

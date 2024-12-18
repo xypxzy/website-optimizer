@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package parser;
+
+service ParserService {
+  rpc ParsePage (ParseRequest) returns (ParseResponse);
+}
+
+message ParseRequest {
+  string url = 1;
+}
+
+message ParseResponse {
+  repeated string headers = 1;
+  repeated string cta_buttons = 2;
+  repeated string meta_tags = 3;
+  repeated string texts = 4;
+}
