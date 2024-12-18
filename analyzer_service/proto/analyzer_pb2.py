@@ -24,17 +24,23 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0e\x61nalyzer.proto\x12\x08\x61nalyzer\"X\n\x0e\x41nalyzeRequest\x12\r\n\x05texts\x18\x01 \x03(\t\x12\x0f\n\x07headers\x18\x02 \x03(\t\x12\x13\n\x0b\x63ta_buttons\x18\x03 \x03(\t\x12\x11\n\tmeta_tags\x18\x04 \x03(\t\"\x8e\x01\n\x0f\x41nalyzeResponse\x12\x11\n\tsentiment\x18\x01 \x01(\t\x12\x1b\n\x13keyword_suggestions\x18\x02 \x03(\t\x12\x18\n\x10improved_headers\x18\x03 \x03(\t\x12\x14\n\x0cimproved_cta\x18\x04 \x03(\t\x12\x1b\n\x13seo_recommendations\x18\x05 \x03(\t2X\n\x0f\x41nalyzerService\x12\x45\n\x0e\x41nalyzeContent\x12\x18.analyzer.AnalyzeRequest\x1a\x19.analyzer.AnalyzeResponseb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0e\x61nalyzer.proto\x12\x08\x61nalyzer\"!\n\x0e\x41nalyzeRequest\x12\x0f\n\x07\x63ontent\x18\x01 \x01(\t\"\xc9\x01\n\x0f\x41nalyzeResponse\x12T\n\x16\x66requency_distribution\x18\x01 \x03(\x0b\x32\x34.analyzer.AnalyzeResponse.FrequencyDistributionEntry\x12\"\n\x08\x65ntities\x18\x02 \x03(\x0b\x32\x10.analyzer.Entity\x1a<\n\x1a\x46requencyDistributionEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x05:\x02\x38\x01\"%\n\x06\x45ntity\x12\x0c\n\x04type\x18\x01 \x01(\t\x12\r\n\x05names\x18\x02 \x03(\t2Q\n\x0f\x41nalyzerService\x12>\n\x07\x41nalyze\x12\x18.analyzer.AnalyzeRequest\x1a\x19.analyzer.AnalyzeResponseb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'analyzer_pb2', _globals)
 if not _descriptor._USE_C_DESCRIPTORS:
   DESCRIPTOR._loaded_options = None
+  _globals['_ANALYZERESPONSE_FREQUENCYDISTRIBUTIONENTRY']._loaded_options = None
+  _globals['_ANALYZERESPONSE_FREQUENCYDISTRIBUTIONENTRY']._serialized_options = b'8\001'
   _globals['_ANALYZEREQUEST']._serialized_start=28
-  _globals['_ANALYZEREQUEST']._serialized_end=116
-  _globals['_ANALYZERESPONSE']._serialized_start=119
-  _globals['_ANALYZERESPONSE']._serialized_end=261
-  _globals['_ANALYZERSERVICE']._serialized_start=263
-  _globals['_ANALYZERSERVICE']._serialized_end=351
+  _globals['_ANALYZEREQUEST']._serialized_end=61
+  _globals['_ANALYZERESPONSE']._serialized_start=64
+  _globals['_ANALYZERESPONSE']._serialized_end=265
+  _globals['_ANALYZERESPONSE_FREQUENCYDISTRIBUTIONENTRY']._serialized_start=205
+  _globals['_ANALYZERESPONSE_FREQUENCYDISTRIBUTIONENTRY']._serialized_end=265
+  _globals['_ENTITY']._serialized_start=267
+  _globals['_ENTITY']._serialized_end=304
+  _globals['_ANALYZERSERVICE']._serialized_start=306
+  _globals['_ANALYZERSERVICE']._serialized_end=387
 # @@protoc_insertion_point(module_scope)

@@ -24,7 +24,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0cparser.proto\x12\x06parser\"\x1b\n\x0cParseRequest\x12\x0b\n\x03url\x18\x01 \x01(\t\"W\n\rParseResponse\x12\x0f\n\x07headers\x18\x01 \x03(\t\x12\x13\n\x0b\x63ta_buttons\x18\x02 \x03(\t\x12\x11\n\tmeta_tags\x18\x03 \x03(\t\x12\r\n\x05texts\x18\x04 \x03(\t2I\n\rParserService\x12\x38\n\tParsePage\x12\x14.parser.ParseRequest\x1a\x15.parser.ParseResponseb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0cparser.proto\x12\x06parser\"\x1b\n\x0cParseRequest\x12\x0b\n\x03url\x18\x01 \x01(\t\" \n\rParseResponse\x12\x0f\n\x07\x63ontent\x18\x01 \x01(\t2E\n\rParserService\x12\x34\n\x05Parse\x12\x14.parser.ParseRequest\x1a\x15.parser.ParseResponseb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -34,7 +34,7 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_PARSEREQUEST']._serialized_start=24
   _globals['_PARSEREQUEST']._serialized_end=51
   _globals['_PARSERESPONSE']._serialized_start=53
-  _globals['_PARSERESPONSE']._serialized_end=140
-  _globals['_PARSERSERVICE']._serialized_start=142
-  _globals['_PARSERSERVICE']._serialized_end=215
+  _globals['_PARSERESPONSE']._serialized_end=85
+  _globals['_PARSERSERVICE']._serialized_start=87
+  _globals['_PARSERSERVICE']._serialized_end=156
 # @@protoc_insertion_point(module_scope)

@@ -1,3 +1,4 @@
+import logging
 import grpc
 from concurrent import futures
 from app.services.parser import ParserServicer
@@ -13,4 +14,5 @@ def serve():
 
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO)
     serve()

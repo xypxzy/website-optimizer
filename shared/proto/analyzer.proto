@@ -2,21 +2,30 @@ syntax = "proto3";
 
 package analyzer;
 
+// Описание gRPC-сервиса для анализа текстового контента из HTML-документа
 service AnalyzerService {
-  rpc AnalyzeContent (AnalyzeRequest) returns (AnalyzeResponse);
+  rpc Analyze(AnalyzeRequest) returns (AnalyzeResponse);
 }
 
+// Запрос для анализа текста
 message AnalyzeRequest {
-  repeated string texts = 1;
-  repeated string headers = 2;
-  repeated string cta_buttons = 3;
-  repeated string meta_tags = 4;
+  string content = 1;
 }
 
+// Ответ на запрос анализа текста
 message AnalyzeResponse {
-  string sentiment = 1; // positive, negative, neutral
-  repeated string keyword_suggestions = 2;
-  repeated string improved_headers = 3;
-  repeated string improved_cta = 4;
-  repeated string seo_recommendations = 5;
+  // Частотное распределение слов в тексте (слово и количество его упоминаний)
+  map<string, int32> frequency_distribution = 1;
+  
+  // Список выделенных сущностей (если в будущем будет активирован метод _extract_entities)
+  repeated Entity entities = 2;
+}
+
+// Сущность, найденная в тексте (например, имя, организация, локация и т.д.)
+message Entity {
+  // Тип сущности (например, PERSON, ORGANIZATION, LOCATION и т.д.)
+  string type = 1;
+  
+  // Список текстовых упоминаний этой сущности в тексте
+  repeated string names = 2;
 }

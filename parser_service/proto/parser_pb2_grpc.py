@@ -29,7 +29,7 @@ if _version_not_supported:
 
 
 class ParserServiceStub(object):
-    """Missing associated documentation comment in .proto file."""
+    """Описание gRPC-сервиса для парсинга веб-страниц"""
 
     def __init__(self, channel):
         """Constructor.
@@ -37,8 +37,8 @@ class ParserServiceStub(object):
         Args:
             channel: A grpc.Channel.
         """
-        self.ParsePage = channel.unary_unary(
-            "/parser.ParserService/ParsePage",
+        self.Parse = channel.unary_unary(
+            "/parser.ParserService/Parse",
             request_serializer=parser__pb2.ParseRequest.SerializeToString,
             response_deserializer=parser__pb2.ParseResponse.FromString,
             _registered_method=True,
@@ -46,9 +46,9 @@ class ParserServiceStub(object):
 
 
 class ParserServiceServicer(object):
-    """Missing associated documentation comment in .proto file."""
+    """Описание gRPC-сервиса для парсинга веб-страниц"""
 
-    def ParsePage(self, request, context):
+    def Parse(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details("Method not implemented!")
@@ -57,8 +57,8 @@ class ParserServiceServicer(object):
 
 def add_ParserServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
-        "ParsePage": grpc.unary_unary_rpc_method_handler(
-            servicer.ParsePage,
+        "Parse": grpc.unary_unary_rpc_method_handler(
+            servicer.Parse,
             request_deserializer=parser__pb2.ParseRequest.FromString,
             response_serializer=parser__pb2.ParseResponse.SerializeToString,
         ),
@@ -72,10 +72,10 @@ def add_ParserServiceServicer_to_server(servicer, server):
 
 # This class is part of an EXPERIMENTAL API.
 class ParserService(object):
-    """Missing associated documentation comment in .proto file."""
+    """Описание gRPC-сервиса для парсинга веб-страниц"""
 
     @staticmethod
-    def ParsePage(
+    def Parse(
         request,
         target,
         options=(),
@@ -90,7 +90,7 @@ class ParserService(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            "/parser.ParserService/ParsePage",
+            "/parser.ParserService/Parse",
             parser__pb2.ParseRequest.SerializeToString,
             parser__pb2.ParseResponse.FromString,
             options,

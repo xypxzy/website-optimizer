@@ -2,17 +2,17 @@ syntax = "proto3";
 
 package parser;
 
+// Описание gRPC-сервиса для парсинга веб-страниц
 service ParserService {
-  rpc ParsePage (ParseRequest) returns (ParseResponse);
+  rpc Parse(ParseRequest) returns (ParseResponse);
 }
 
+// Сообщение с запросом для парсинга
 message ParseRequest {
   string url = 1;
 }
 
+// Сообщение с ответом для парсинга
 message ParseResponse {
-  repeated string headers = 1;
-  repeated string cta_buttons = 2;
-  repeated string meta_tags = 3;
-  repeated string texts = 4;
+  string content = 1;
 }

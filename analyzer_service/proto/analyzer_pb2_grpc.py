@@ -29,7 +29,7 @@ if _version_not_supported:
 
 
 class AnalyzerServiceStub(object):
-    """Missing associated documentation comment in .proto file."""
+    """Описание gRPC-сервиса для анализа текстового контента из HTML-документа"""
 
     def __init__(self, channel):
         """Constructor.
@@ -37,8 +37,8 @@ class AnalyzerServiceStub(object):
         Args:
             channel: A grpc.Channel.
         """
-        self.AnalyzeContent = channel.unary_unary(
-            "/analyzer.AnalyzerService/AnalyzeContent",
+        self.Analyze = channel.unary_unary(
+            "/analyzer.AnalyzerService/Analyze",
             request_serializer=analyzer__pb2.AnalyzeRequest.SerializeToString,
             response_deserializer=analyzer__pb2.AnalyzeResponse.FromString,
             _registered_method=True,
@@ -46,9 +46,9 @@ class AnalyzerServiceStub(object):
 
 
 class AnalyzerServiceServicer(object):
-    """Missing associated documentation comment in .proto file."""
+    """Описание gRPC-сервиса для анализа текстового контента из HTML-документа"""
 
-    def AnalyzeContent(self, request, context):
+    def Analyze(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details("Method not implemented!")
@@ -57,8 +57,8 @@ class AnalyzerServiceServicer(object):
 
 def add_AnalyzerServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
-        "AnalyzeContent": grpc.unary_unary_rpc_method_handler(
-            servicer.AnalyzeContent,
+        "Analyze": grpc.unary_unary_rpc_method_handler(
+            servicer.Analyze,
             request_deserializer=analyzer__pb2.AnalyzeRequest.FromString,
             response_serializer=analyzer__pb2.AnalyzeResponse.SerializeToString,
         ),
@@ -74,10 +74,10 @@ def add_AnalyzerServiceServicer_to_server(servicer, server):
 
 # This class is part of an EXPERIMENTAL API.
 class AnalyzerService(object):
-    """Missing associated documentation comment in .proto file."""
+    """Описание gRPC-сервиса для анализа текстового контента из HTML-документа"""
 
     @staticmethod
-    def AnalyzeContent(
+    def Analyze(
         request,
         target,
         options=(),
@@ -92,7 +92,7 @@ class AnalyzerService(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            "/analyzer.AnalyzerService/AnalyzeContent",
+            "/analyzer.AnalyzerService/Analyze",
             analyzer__pb2.AnalyzeRequest.SerializeToString,
             analyzer__pb2.AnalyzeResponse.FromString,
             options,

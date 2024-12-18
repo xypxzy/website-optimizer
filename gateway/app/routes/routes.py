@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Query
 import grpc
 from google.protobuf.json_format import MessageToDict
 
@@ -16,29 +16,18 @@ def healthcheck():
 
 
 @router.post("/analyze_url")
-def analyze_url(url: str):
-    # Подключаемся к парсеру
+def analyze_url(url: str = Query(..., description="The URL to analyze")):
+    # Connect to the parser service
     with grpc.insecure_channel("parser_service:50051") as channel:
         parser_stub = ParserServiceStub(channel)
-        parse_response = parser_stub.ParsePage(ParseRequest(url=url))
+        parse_response = parser_stub.Parse(ParseRequest(url=url))
         parsed_data = MessageToDict(parse_response)
 
-    # Получаем данные для анализа
-    headers = parsed_data.get("headers", [])
-    texts = parsed_data.get("texts", [])
-    cta_buttons = parsed_data.get("ctaButtons", [])
-    meta_tags = parsed_data.get("metaTags", [])
-
-    # Анализируем через analyzer_service
+    # Analyze the parsed content through analyzer_service
     with grpc.insecure_channel("analyzer_service:50052") as channel:
         analyzer_stub = AnalyzerServiceStub(channel)
-        analyze_response = analyzer_stub.AnalyzeContent(
-            AnalyzeRequest(
-                texts=texts,
-                headers=headers,
-                cta_buttons=cta_buttons,
-                meta_tags=meta_tags,
-            )
+        analyze_response = analyzer_stub.Analyze(
+            AnalyzeRequest(content=parsed_data.get("content", ""))
         )
         analyzed_result = MessageToDict(analyze_response)
 
