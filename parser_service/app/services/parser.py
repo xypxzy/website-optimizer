@@ -1,5 +1,8 @@
 import logging
 import requests
+import psycopg2
+import pika
+import os
 from bs4 import BeautifulSoup
 import grpc
 from selenium import webdriver
@@ -20,6 +23,18 @@ class ParserServicer(parser_pb2_grpc.ParserServiceServicer):
     DYNAMIC_SITE_MARKERS = ["<script", "window.__INITIAL_STATE__", "data-reactroot"]
     HTML_CONTENT_TYPE = "text/html"
 
+    def __init__(self):
+        # connect to the database
+        self.db_conn = psycopg2.connect(os.getenv("DATABASE_URL"))
+        self.db_cursor = self.db_conn.cursor()
+
+        # connect to the message broker (RabbitMQ)
+        self.rabbitmq_conn = pika.BlockingConnection(
+            pika.ConnectionParameters(host=os.getenv("RABBITMQ_HOST"))
+        )
+        self.rabbitmq_channel = self.rabbitmq_conn.channel()
+        self.rabbitmq_channel.queue_declare(queue="analyze_queue")
+
     def Parse(self, request, context):
         url = request.url
         logger.info(f"Starting parsing site: {url}")
@@ -28,6 +43,15 @@ class ParserServicer(parser_pb2_grpc.ParserServiceServicer):
                 soup = self.parse_dynamic_site(url)
             else:
                 soup = self.parse_static_site(url)
+
+            # save to the database
+            self.save_to_db(url, str(soup))
+
+            # send to the message broker
+            self.rabbitmq_channel.basic_publish(
+                exchange="", routing_key="analyze_queue", body=str(soup)
+            )
+
             return parser_pb2.ParseResponse(content=str(soup))
         except Exception as e:
             logger.error(f"Error parsing the site {url}: {e}")
@@ -110,3 +134,13 @@ class ParserServicer(parser_pb2_grpc.ParserServiceServicer):
         options.add_argument("--no-sandbox")
         options.add_argument("--disable-dev-shm-usage")
         return options
+
+    def save_to_db(self, url: str, html_content: str):
+        """Saves the parsed content to the database."""
+        try:
+            query = "INSERT INTO parsed_pages (url, html_content, status) VALUES (%s, %s, %s)"
+            self.db_cursor.execute(query, (url, html_content, "success"))
+            self.db_conn.commit()
+        except psycopg2.Error as e:
+            logger.error(f"Error saving to the database: {e}")
+            raise

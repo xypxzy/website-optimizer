@@ -4,8 +4,15 @@ import grpc
 from concurrent import futures
 from app.services.text_analyzer import TextAnalyzerServicer
 from proto import analyzer_pb2_grpc
+from app.models.analyzer import Base
+from app.db.db import engine
 
 logger = logging.getLogger(__name__)
+
+
+def init_db():
+    """Creates tables when the container starts."""
+    Base.metadata.create_all(bind=engine)
 
 
 def serve():
@@ -25,9 +32,6 @@ def serve():
 
 
 if __name__ == "__main__":
-    logging.basicConfig(
-        level=logging.INFO,
-        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    )
-    logger.info("Starting TextAnalyzerService.")
+    logging.basicConfig(level=logging.INFO)
+    init_db()
     serve()

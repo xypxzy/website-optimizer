@@ -6,6 +6,12 @@ services:
     image: parser_service:latest
     ports:
       - '50051:50051'
+    depends_on:
+      - db
+      - rabbitmq
+    environment:
+      DATABASE_URL: 'postgresql://user:password@db:5432/web_optimizer'
+      RABBITMQ_URL: 'amqp://user:password@rabbitmq:5672/'
 
   analyzer_service:
     build: ./analyzer_service
@@ -13,6 +19,12 @@ services:
     image: analyzer_service:latest
     ports:
       - '50052:50052'
+    depends_on:
+      - db
+      - rabbitmq
+    environment:
+      DATABASE_URL: 'postgresql://user:password@db:5432/web_optimizer'
+      RABBITMQ_URL: 'amqp://user:password@rabbitmq:5672/'
 
   gateway:
     build: ./gateway
@@ -26,3 +38,25 @@ services:
     environment:
       PARSER_SERVICE_HOST: 'parser_service'
       ANALYZER_SERVICE_HOST: 'analyzer_service'
+
+  db:
+    image: postgres:15
+    container_name: db
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: web_optimizer
+    ports:
+      - '5432:5432'
+    volumes:
+      - ./db-data:/var/lib/postgresql/data
+
+  rabbitmq:
+    image: rabbitmq:management
+    container_name: rabbitmq
+    ports:
+      - '5672:5672'
+      - '15672:15672'
+    environment:
+      RABBITMQ_DEFAULT_USER: user
+      RABBITMQ_DEFAULT_PASS: password
