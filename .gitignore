@@ -128,3 +128,7 @@ dmypy.json
 
 # Local virtual environment
 venv/
+
+
+# DB
+db-data/
