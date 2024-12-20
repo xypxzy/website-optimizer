@@ -10,9 +10,11 @@ service ParserService {
 // Сообщение с запросом для парсинга
 message ParseRequest {
   string url = 1;
+  string correlation_id = 2;  // Добавлено
 }
 
 // Сообщение с ответом для парсинга
 message ParseResponse {
   string content = 1;
+  string correlation_id = 2;  // Добавлено
 }

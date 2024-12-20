@@ -10,6 +10,7 @@ service AnalyzerService {
 // Запрос для анализа текста
 message AnalyzeRequest {
   string content = 1;
+  string correlation_id = 2;  // Добавлено
 }
 
 // Ответ на запрос анализа текста
@@ -19,6 +20,8 @@ message AnalyzeResponse {
   
   // Список выделенных сущностей (если в будущем будет активирован метод _extract_entities)
   repeated Entity entities = 2;
+  
+  string correlation_id = 3;  // Добавлено
 }
 
 // Сущность, найденная в тексте (например, имя, организация, локация и т.д.)

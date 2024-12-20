@@ -1,11 +1,36 @@
 version: '3.9'
 services:
+  rabbitmq:
+    image: rabbitmq:3.11-management
+    container_name: rabbitmq
+    ports:
+      - '5672:5672' # RabbitMQ AMQP порт
+      - '15672:15672' # RabbitMQ Management UI
+    environment:
+      RABBITMQ_DEFAULT_USER: user
+      RABBITMQ_DEFAULT_PASS: password
+    healthcheck:
+      test: ['CMD', 'rabbitmqctl', 'status']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   parser_service:
     build: ./parser_service
     container_name: parser_service
     image: parser_service:latest
     ports:
       - '50051:50051'
+    environment:
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_PARSE_QUEUE: parse_queue
+      RABBITMQ_ANALYZE_QUEUE: analyze_queue
+      RABBITMQ_USER: user
+      RABBITMQ_PASSWORD: password
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
 
   analyzer_service:
     build: ./analyzer_service
@@ -13,6 +38,16 @@ services:
     image: analyzer_service:latest
     ports:
       - '50052:50052'
+    environment:
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_ANALYZE_QUEUE: analyze_queue
+      RABBITMQ_RESULTS_QUEUE: results_queue
+      RABBITMQ_USER: user
+      RABBITMQ_PASSWORD: password
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
 
   gateway:
     build: ./gateway
@@ -21,8 +56,16 @@ services:
     depends_on:
       - parser_service
       - analyzer_service
+      - rabbitmq
     ports:
       - '8080:8080'
     environment:
       PARSER_SERVICE_HOST: 'parser_service'
       ANALYZER_SERVICE_HOST: 'analyzer_service'
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_PARSE_QUEUE: parse_queue
+      RABBITMQ_ANALYZE_QUEUE: analyze_queue
+      RABBITMQ_RESULTS_QUEUE: results_queue
+      RABBITMQ_USER: user
+      RABBITMQ_PASSWORD: password

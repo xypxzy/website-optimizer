@@ -24,7 +24,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0cparser.proto\x12\x06parser\"\x1b\n\x0cParseRequest\x12\x0b\n\x03url\x18\x01 \x01(\t\" \n\rParseResponse\x12\x0f\n\x07\x63ontent\x18\x01 \x01(\t2E\n\rParserService\x12\x34\n\x05Parse\x12\x14.parser.ParseRequest\x1a\x15.parser.ParseResponseb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0cparser.proto\x12\x06parser\"3\n\x0cParseRequest\x12\x0b\n\x03url\x18\x01 \x01(\t\x12\x16\n\x0e\x63orrelation_id\x18\x02 \x01(\t\"8\n\rParseResponse\x12\x0f\n\x07\x63ontent\x18\x01 \x01(\t\x12\x16\n\x0e\x63orrelation_id\x18\x02 \x01(\t2E\n\rParserService\x12\x34\n\x05Parse\x12\x14.parser.ParseRequest\x1a\x15.parser.ParseResponseb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -32,9 +32,9 @@ _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'parser_pb2', _globals)
 if not _descriptor._USE_C_DESCRIPTORS:
   DESCRIPTOR._loaded_options = None
   _globals['_PARSEREQUEST']._serialized_start=24
-  _globals['_PARSEREQUEST']._serialized_end=51
-  _globals['_PARSERESPONSE']._serialized_start=53
-  _globals['_PARSERESPONSE']._serialized_end=85
-  _globals['_PARSERSERVICE']._serialized_start=87
-  _globals['_PARSERSERVICE']._serialized_end=156
+  _globals['_PARSEREQUEST']._serialized_end=75
+  _globals['_PARSERESPONSE']._serialized_start=77
+  _globals['_PARSERESPONSE']._serialized_end=133
+  _globals['_PARSERSERVICE']._serialized_start=135
+  _globals['_PARSERSERVICE']._serialized_end=204
 # @@protoc_insertion_point(module_scope)
