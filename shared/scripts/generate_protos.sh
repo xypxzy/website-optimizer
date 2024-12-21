@@ -19,7 +19,7 @@ PROTO_DIR="$ROOT_DIR/shared/proto"
 SERVICES=(
   "$ROOT_DIR/gateway:analyzer.proto parser.proto"
   "$ROOT_DIR/parser_service:parser.proto"
-  "$ROOT_DIR/analyzer_service:analyzer.proto"
+  "$ROOT_DIR/analyzer_service:analyzer.proto parser.proto"
 )
 
 # Function to generate .proto files
