@@ -1,12 +1,11 @@
 from fastapi import APIRouter, Query, HTTPException
 from google.protobuf.json_format import MessageToDict
 from fastapi.responses import JSONResponse
-import pika
+import aio_pika
 import os
 import uuid
 import json
 import logging
-import threading
 import asyncio
 
 from proto.parser_pb2 import ParseRequest
@@ -28,12 +27,12 @@ RABBITMQ_PASSWORD = os.getenv("RABBITMQ_PASSWORD", "password")
 logger = logging.getLogger("gateway")
 
 
-def get_rabbitmq_connection():
-    credentials = pika.PlainCredentials(RABBITMQ_USER, RABBITMQ_PASSWORD)
-    return pika.BlockingConnection(
-        pika.ConnectionParameters(
-            host=RABBITMQ_HOST, port=RABBITMQ_PORT, credentials=credentials
-        )
+async def get_aio_pika_connection():
+    return await aio_pika.connect_robust(
+        host=RABBITMQ_HOST,
+        port=RABBITMQ_PORT,
+        login=RABBITMQ_USER,
+        password=RABBITMQ_PASSWORD,
     )
 
 
@@ -54,21 +53,22 @@ async def analyze_url(url: str = Query(..., description="The URL to analyze")):
 
     # Публикация в parse_queue
     try:
-        connection = get_rabbitmq_connection()
-        channel = connection.channel()
-        channel.queue_declare(queue=PARSE_QUEUE, durable=True)
+        connection = await get_aio_pika_connection()
+        channel = await connection.channel()
+        await channel.declare_queue(PARSE_QUEUE, durable=True)
 
         parse_request = ParseRequest(url=url, correlation_id=correlation_id)
 
-        channel.basic_publish(
-            exchange="",
-            routing_key=PARSE_QUEUE,
+        message = aio_pika.Message(
             body=parse_request.SerializeToString(),
-            properties=pika.BasicProperties(
-                delivery_mode=2,  # Сделать сообщение постоянным
-            ),
+            delivery_mode=aio_pika.DeliveryMode.PERSISTENT,
         )
-        connection.close()
+
+        await channel.default_exchange.publish(
+            message,
+            routing_key=PARSE_QUEUE,
+        )
+        await connection.close()
         logger.info(
             f"Опубликовали ParseRequest в {PARSE_QUEUE} с correlation_id: {correlation_id}"
         )
@@ -111,72 +111,70 @@ async def get_results(correlation_id: str):
         return response
 
 
-# Фоновая задача для прослушивания results_queue остается без изменений
-def consume_results_queue():
-    try:
-        connection = get_rabbitmq_connection()
-        channel = connection.channel()
-        channel.queue_declare(queue=RESULTS_QUEUE, durable=True)
-        logger.info(f"Подключились к RabbitMQ, прослушиваем очередь: {RESULTS_QUEUE}")
+async def process_message(message: aio_pika.IncomingMessage):
+    async with message.process():
+        try:
+            analyze_response = AnalyzeResponse()
+            analyze_response.ParseFromString(message.body)
+            correlation_id = analyze_response.correlation_id
 
-        def callback(ch, method, properties, body):
-            logger.info("Получено сообщение из results_queue.")
-            try:
-                analyze_response = AnalyzeResponse()
-                analyze_response.ParseFromString(body)
-                correlation_id = analyze_response.correlation_id
+            # Обновление результатов в PostgreSQL
+            await update_results(correlation_id, analyze_response)
 
-                # Обновление результатов в PostgreSQL
-                asyncio.run(update_results(correlation_id, analyze_response))
+            logger.info(f"Обработали анализ для correlation_id: {correlation_id}")
 
-                ch.basic_ack(delivery_tag=method.delivery_tag)
-            except Exception as e:
-                logger.error(f"Ошибка при обработке результатов анализа: {e}")
-                ch.basic_nack(delivery_tag=method.delivery_tag, requeue=False)
-
-        async def update_results(correlation_id, analyze_response):
-            async with AsyncSessionLocal() as session:
-                analysis = await session.execute(
-                    select(AnalysisResult).where(
-                        AnalysisResult.correlation_id == correlation_id
-                    )
-                )
-                analysis = analysis.scalars().first()
-                if analysis:
-                    analysis.status = "completed"
-                    analysis.frequency_distribution = (
-                        analyze_response.frequency_distribution
-                    )
-                    analysis.entities = [
-                        MessageToDict(entity) for entity in analyze_response.entities
-                    ]
-                    await session.commit()
-
-                    # Обновление кэша в Redis
-                    response = {
-                        "status": analysis.status,
-                        "frequency_distribution": analysis.frequency_distribution,
-                        "entities": analysis.entities,
-                    }
-                    await redis.set(
-                        correlation_id, json.dumps(response), ex=3600
-                    )  # Кэш на 1 час
-                    logger.info(
-                        f"Обновили результаты для correlation_id: {correlation_id}"
-                    )
-                else:
-                    logger.warning(
-                        f"Получены результаты для неизвестного correlation_id: {correlation_id}"
-                    )
-
-        channel.basic_qos(prefetch_count=1)
-        channel.basic_consume(queue=RESULTS_QUEUE, on_message_callback=callback)
-        logger.info("Начали прослушивать results_queue.")
-        channel.start_consuming()
-    except Exception as e:
-        logger.error(f"Не удалось подключиться к RabbitMQ: {e}")
+        except Exception as e:
+            logger.error(f"Ошибка при обработке результатов анализа: {e}")
+            # Nack сообщение без повторной попытки, чтобы избежать зацикливания
+            await message.nack(requeue=False)
 
 
-# Запуск фоновой задачи при старте приложения
-grpc_thread = threading.Thread(target=consume_results_queue, daemon=True)
-grpc_thread.start()
+async def update_results(correlation_id, analyze_response):
+    async with AsyncSessionLocal() as session:
+        analysis_result = await session.execute(
+            select(AnalysisResult).where(
+                AnalysisResult.correlation_id == correlation_id
+            )
+        )
+        analysis = analysis_result.scalars().first()
+        if analysis:
+            analysis.status = "completed"
+            # Преобразование ScalarMapContainer в dict
+            analysis.frequency_distribution = dict(
+                analyze_response.frequency_distribution
+            )
+            analysis.entities = [
+                MessageToDict(entity) for entity in analyze_response.entities
+            ]
+            await session.commit()
+
+            # Обновление кэша в Redis
+            response = {
+                "status": analysis.status,
+                "frequency_distribution": analysis.frequency_distribution,
+                "entities": analysis.entities,
+            }
+            await redis.set(
+                correlation_id, json.dumps(response), ex=3600
+            )  # Кэш на 1 час
+            logger.info(f"Обновили результаты для correlation_id: {correlation_id}")
+        else:
+            logger.warning(
+                f"Получены результаты для неизвестного correlation_id: {correlation_id}"
+            )
+
+
+async def consume_results():
+    connection = await get_aio_pika_connection()
+    channel = await connection.channel()
+    await channel.declare_queue(RESULTS_QUEUE, durable=True)
+    queue = await channel.get_queue(RESULTS_QUEUE)
+
+    await queue.consume(process_message, no_ack=False)
+    logger.info("Начали прослушивать results_queue.")
+    await asyncio.Future()  # Run forever
+
+
+@router.on_event("startup")
+async def startup_event():
+    asyncio.create_task(consume_results())

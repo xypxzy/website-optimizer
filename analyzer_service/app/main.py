@@ -1,21 +1,14 @@
 import logging
 import grpc
 from concurrent import futures
-from app.services.text_analyzer import TextAnalyzerServicer
-from proto import analyzer_pb2_grpc, analyzer_pb2
-
+from proto import parser_pb2, analyzer_pb2, analyzer_pb2_grpc
 import aio_pika
 import asyncio
 import os
 import traceback
-import json
-from google.protobuf.json_format import MessageToDict
-from sqlalchemy.exc import SQLAlchemyError
 
-from app.database import engine, Base, AsyncSessionLocal
-from app.cache import redis
-from app.models import AnalysisResult
-from sqlalchemy.future import select
+from app.database import engine, Base
+from app.services.text_analyzer import TextAnalyzerServicer
 
 logger = logging.getLogger(__name__)
 
@@ -56,71 +49,44 @@ async def consume_analyze_queue():
             async for message in queue_iter:
                 async with message.process():
                     try:
-                        analyze_response = analyzer_pb2.AnalyzeResponse()
-                        analyze_response.ParseFromString(message.body)
-                        correlation_id = analyze_response.correlation_id
+                        # Разбираем сообщение как ParseResponse
+                        parse_response = parser_pb2.ParseResponse()
+                        parse_response.ParseFromString(message.body)
+                        correlation_id = parse_response.correlation_id
+                        content = parse_response.content
 
                         logger.info(
                             f"Анализ содержимого с correlation_id: {correlation_id}"
                         )
 
-                        await update_results(correlation_id, analyze_response)
-
-                        logger.info(
-                            f"Обработали анализ для correlation_id: {correlation_id}"
+                        # Создаем AnalyzeRequest из ParseResponse
+                        analyze_request = analyzer_pb2.AnalyzeRequest(
+                            correlation_id=correlation_id, content=content
                         )
 
+                        # Выполняем анализ
+                        text_analyzer = TextAnalyzerServicer()
+                        analyze_response = await text_analyzer.Analyze(
+                            analyze_request, None
+                        )
+
+                        # Публикуем AnalyzeResponse в results_queue
+                        await channel.default_exchange.publish(
+                            aio_pika.Message(
+                                body=analyze_response.SerializeToString(),
+                                delivery_mode=aio_pika.DeliveryMode.PERSISTENT,
+                            ),
+                            routing_key=RESULTS_QUEUE,
+                        )
+                        logger.info(
+                            f"Опубликовали AnalyzeResponse в {RESULTS_QUEUE} с correlation_id: {correlation_id}"
+                        )
                     except Exception as e:
-                        logger.error(f"Ошибка при обработке анализа: {e}")
+                        logger.error(f"Ошибка при обработке сообщения: {e}")
                         traceback.print_exc()
     except Exception as e:
         logger.critical(f"Не удалось подключиться к RabbitMQ: {e}")
         raise
-
-
-async def update_results(correlation_id, analyze_response):
-    async with AsyncSessionLocal() as session:
-        try:
-            # Получаем запись для обновления
-            result = await session.execute(
-                select(AnalysisResult).where(
-                    AnalysisResult.correlation_id == correlation_id
-                )
-            )
-            analysis = result.scalars().first()
-            if analysis:
-                analysis.status = "completed"
-                # Конвертация frequency_distribution в стандартный dict
-                analysis.frequency_distribution = MessageToDict(
-                    analyze_response.frequency_distribution
-                )
-                # Конвертация entities в список dict
-                analysis.entities = [
-                    MessageToDict(entity) for entity in analyze_response.entities
-                ]
-                await session.commit()
-
-                # Обновление кэша в Redis
-                response = {
-                    "status": analysis.status,
-                    "frequency_distribution": analysis.frequency_distribution,
-                    "entities": analysis.entities,
-                }
-                await redis.set(
-                    correlation_id, json.dumps(response), ex=3600
-                )  # Кэш на 1 час
-                logger.info(f"Обновили результаты для correlation_id: {correlation_id}")
-            else:
-                logger.warning(
-                    f"Получены результаты для неизвестного correlation_id: {correlation_id}"
-                )
-        except SQLAlchemyError as e:
-            await session.rollback()
-            logger.error(f"Ошибка при обновлении записи в базе данных: {e}")
-            raise
-        except Exception as e:
-            logger.error(f"Неизвестная ошибка при обновлении результатов: {e}")
-            raise
 
 
 async def main():

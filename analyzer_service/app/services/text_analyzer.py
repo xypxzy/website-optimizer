@@ -1,7 +1,6 @@
 import logging
-from bs4 import BeautifulSoup
+import grpc
 from proto import analyzer_pb2_grpc, analyzer_pb2
-
 
 logger = logging.getLogger(__name__)
 
@@ -22,49 +21,36 @@ class TextAnalyzerServicer(analyzer_pb2_grpc.AnalyzerServiceServicer):
 
         logger.info("TextAnalyzerService инициализирован.")
 
-    def Analyze(self, parse_response):
+    async def Analyze(self, request, context):
         """
         Выполняет анализ контента и возвращает AnalyzeResponse.
         """
-        content = parse_response.content
-        correlation_id = parse_response.correlation_id
+        content = request.content
+        correlation_id = request.correlation_id
 
         logger.info(f"Анализ содержимого с correlation_id: {correlation_id}")
 
-        # Пример простого анализа: подсчёт слов
-        words = content.lower().split()
-        frequency_distribution = {}
-        for word in words:
-            frequency_distribution[word] = frequency_distribution.get(word, 0) + 1
+        try:
+            # Пример простого анализа: подсчёт слов
+            words = content.lower().split()
+            frequency_distribution = {}
+            for word in words:
+                frequency_distribution[word] = frequency_distribution.get(word, 0) + 1
 
-        # Пример извлечения сущностей (здесь просто пустой список)
-        entities = []
+            # Пример извлечения сущностей (здесь просто пустой список)
+            entities = []
 
-        analyze_response = analyzer_pb2.AnalyzeResponse(
-            correlation_id=correlation_id,
-            frequency_distribution=frequency_distribution,
-            entities=entities,
-        )
+            analyze_response = analyzer_pb2.AnalyzeResponse(
+                correlation_id=correlation_id,
+                frequency_distribution=frequency_distribution,
+                entities=entities,
+            )
 
-        logger.info("Анализ завершен успешно.")
+            logger.info("Анализ завершен успешно.")
 
-        return analyze_response
-
-    def _extract_text(self, soup: BeautifulSoup) -> str:
-        """Извлекает весь текст из объекта BeautifulSoup, удаляя скрипты и стили."""
-        for script in soup(["script", "style"]):
-            script.decompose()
-        return " ".join(soup.stripped_strings)
-
-    def _get_frequency_distribution(self, text: str) -> dict:
-        """Создает частотное распределение слов в тексте."""
-        words = text.lower().split()
-        freq_dist = {}
-        for word in words:
-            freq_dist[word] = freq_dist.get(word, 0) + 1
-        return freq_dist
-
-    def _extract_entities(self, text: str) -> list:
-        """Извлекает сущности из текста. Реализуйте с помощью spaCy или другой библиотеки."""
-        # Пример заглушки. Реализуйте настоящую логику.
-        return []
+            return analyze_response
+        except Exception as e:
+            logger.error(f"Ошибка при анализе содержимого: {e}")
+            context.set_details(str(e))
+            context.set_code(grpc.StatusCode.INTERNAL)
+            return analyzer_pb2.AnalyzeResponse()
