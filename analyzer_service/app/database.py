@@ -15,13 +15,13 @@ DATABASE_URL = (
     f"@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}"
 )
 
-# Создание асинхронного движка
+# Create an asynchronous engine
 engine = create_async_engine(DATABASE_URL, echo=True)
 
-# Создание фабрики сессий
+# Create a session factory
 AsyncSessionLocal = sessionmaker(
     bind=engine, class_=AsyncSession, expire_on_commit=False
 )
 
-# Определение базового класса для моделей
+# Define the base class for models
 Base = declarative_base()

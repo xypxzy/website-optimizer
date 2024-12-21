@@ -45,13 +45,13 @@ async def healthcheck():
 async def analyze_url(url: str = Query(..., description="The URL to analyze")):
     correlation_id = str(uuid.uuid4())
 
-    # Сохранение начальной записи в PostgreSQL
+    # Save initial record in PostgreSQL
     async with AsyncSessionLocal() as session:
         analysis = AnalysisResult(correlation_id=correlation_id, status="processing")
         session.add(analysis)
         await session.commit()
 
-    # Публикация в parse_queue
+    # Publish to parse_queue
     try:
         connection = await get_aio_pika_connection()
         channel = await connection.channel()
@@ -70,25 +70,23 @@ async def analyze_url(url: str = Query(..., description="The URL to analyze")):
         )
         await connection.close()
         logger.info(
-            f"Опубликовали ParseRequest в {PARSE_QUEUE} с correlation_id: {correlation_id}"
+            f"Published ParseRequest to {PARSE_QUEUE} with correlation_id: {correlation_id}"
         )
     except Exception as e:
-        logger.error(f"Не удалось опубликовать сообщение: {e}")
-        raise HTTPException(
-            status_code=500, detail=f"Не удалось опубликовать сообщение: {e}"
-        )
+        logger.error(f"Failed to publish message: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to publish message: {e}")
 
-    return {"message": "URL обрабатывается.", "correlation_id": correlation_id}
+    return {"message": "URL is being processed.", "correlation_id": correlation_id}
 
 
 @router.get("/results/{correlation_id}")
 async def get_results(correlation_id: str):
-    # Попытка получить данные из Redis
+    # Try to get data from Redis
     cached_result = await redis.get(correlation_id)
     if cached_result:
         return json.loads(cached_result)
 
-    # Если нет в Redis, получить из PostgreSQL
+    # If not in Redis, get from PostgreSQL
     async with AsyncSessionLocal() as session:
         result = await session.execute(
             select(AnalysisResult).where(
@@ -97,7 +95,7 @@ async def get_results(correlation_id: str):
         )
         analysis = result.scalars().first()
         if not analysis:
-            raise HTTPException(status_code=404, detail="Correlation ID не найден.")
+            raise HTTPException(status_code=404, detail="Correlation ID not found.")
 
         response = {
             "status": analysis.status,
@@ -105,8 +103,8 @@ async def get_results(correlation_id: str):
             "entities": analysis.entities,
         }
 
-        # Кэшировать результат в Redis
-        await redis.set(correlation_id, json.dumps(response), ex=3600)  # Кэш на 1 час
+        # Cache the result in Redis
+        await redis.set(correlation_id, json.dumps(response), ex=3600)
 
         return response
 
@@ -118,14 +116,14 @@ async def process_message(message: aio_pika.IncomingMessage):
             analyze_response.ParseFromString(message.body)
             correlation_id = analyze_response.correlation_id
 
-            # Обновление результатов в PostgreSQL
+            # Update results in PostgreSQL
             await update_results(correlation_id, analyze_response)
 
-            logger.info(f"Обработали анализ для correlation_id: {correlation_id}")
+            logger.info(f"Processed analysis for correlation_id: {correlation_id}")
 
         except Exception as e:
-            logger.error(f"Ошибка при обработке результатов анализа: {e}")
-            # Nack сообщение без повторной попытки, чтобы избежать зацикливания
+            logger.error(f"Error processing analysis results: {e}")
+            # Nack message without retry to avoid looping
             await message.nack(requeue=False)
 
 
@@ -139,7 +137,7 @@ async def update_results(correlation_id, analyze_response):
         analysis = analysis_result.scalars().first()
         if analysis:
             analysis.status = "completed"
-            # Преобразование ScalarMapContainer в dict
+            # Convert ScalarMapContainer to dict
             analysis.frequency_distribution = dict(
                 analyze_response.frequency_distribution
             )
@@ -148,19 +146,17 @@ async def update_results(correlation_id, analyze_response):
             ]
             await session.commit()
 
-            # Обновление кэша в Redis
+            # Update cache in Redis
             response = {
                 "status": analysis.status,
                 "frequency_distribution": analysis.frequency_distribution,
                 "entities": analysis.entities,
             }
-            await redis.set(
-                correlation_id, json.dumps(response), ex=3600
-            )  # Кэш на 1 час
-            logger.info(f"Обновили результаты для correlation_id: {correlation_id}")
+            await redis.set(correlation_id, json.dumps(response), ex=3600)
+            logger.info(f"Updated results for correlation_id: {correlation_id}")
         else:
             logger.warning(
-                f"Получены результаты для неизвестного correlation_id: {correlation_id}"
+                f"Received results for unknown correlation_id: {correlation_id}"
             )
 
 
@@ -171,8 +167,8 @@ async def consume_results():
     queue = await channel.get_queue(RESULTS_QUEUE)
 
     await queue.consume(process_message, no_ack=False)
-    logger.info("Начали прослушивать results_queue.")
-    await asyncio.Future()  # Run forever
+    logger.info("Started listening to results_queue.")
+    await asyncio.Future()
 
 
 @router.on_event("startup")

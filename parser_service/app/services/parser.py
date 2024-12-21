@@ -44,9 +44,7 @@ class ParserServicer(parser_pb2_grpc.ParserServiceServicer):
             content_type = response.headers.get("Content-Type", "")
 
             if self.HTML_CONTENT_TYPE in content_type:
-                chunk = response.raw.read(2048).decode(
-                    "utf-8", errors="ignore"
-                )  # Read the first 2048 bytes
+                chunk = response.raw.read(2048).decode("utf-8", errors="ignore")
                 if any(marker in chunk for marker in self.DYNAMIC_SITE_MARKERS):
                     logger.info(f"The site is dynamic: {url}")
                     return True

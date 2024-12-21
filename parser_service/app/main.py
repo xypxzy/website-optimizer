@@ -27,7 +27,7 @@ async def serve_grpc():
     parser_pb2_grpc.add_ParserServiceServicer_to_server(ParserServicer(), server)
     server.add_insecure_port("[::]:50051")
     await server.start()
-    logger.info("gRPC сервер запущен на порту 50051.")
+    logger.info("gRPC server started on port 50051.")
     await server.wait_for_termination()
 
 
@@ -43,7 +43,7 @@ async def consume_parse_queue():
         await channel.set_qos(prefetch_count=10)
 
         queue = await channel.declare_queue(PARSE_QUEUE, durable=True)
-        logger.info(f"Подключились к RabbitMQ, прослушиваем очередь: {PARSE_QUEUE}")
+        logger.info(f"Connected to RabbitMQ, listening to queue: {PARSE_QUEUE}")
 
         async with queue.iterator() as queue_iter:
             async for message in queue_iter:
@@ -54,15 +54,15 @@ async def consume_parse_queue():
                         url = parse_request.url
                         correlation_id = parse_request.correlation_id
                         logger.info(
-                            f"Парсинг URL: {url} с correlation_id: {correlation_id}"
+                            f"Parsing URL: {url} with correlation_id: {correlation_id}"
                         )
 
-                        # Обработка парсинга
+                        # Parsing processing
                         parser = ParserServicer()
                         parse_response = parser.Parse(parse_request, None)
                         parse_response.correlation_id = correlation_id
 
-                        # Сохранение результата в базу данных
+                        # Save result to database
                         async with AsyncSessionLocal() as session:
                             parsed = ParsedData(
                                 correlation_id=correlation_id,
@@ -72,7 +72,7 @@ async def consume_parse_queue():
                             session.add(parsed)
                             await session.commit()
 
-                        # Публикация в analyze_queue
+                        # Publish to analyze_queue
                         await channel.default_exchange.publish(
                             aio_pika.Message(
                                 body=parse_response.SerializeToString(),
@@ -81,13 +81,13 @@ async def consume_parse_queue():
                             routing_key=ANALYZE_QUEUE,
                         )
                         logger.info(
-                            f"Опубликовали parsed content в {ANALYZE_QUEUE} с correlation_id: {correlation_id}"
+                            f"Published parsed content to {ANALYZE_QUEUE} with correlation_id: {correlation_id}"
                         )
                     except Exception as e:
-                        logger.error(f"Ошибка при обработке сообщения: {e}")
+                        logger.error(f"Error processing message: {e}")
                         traceback.print_exc()
     except Exception as e:
-        logger.critical(f"Не удалось подключиться к RabbitMQ: {e}")
+        logger.critical(f"Failed to connect to RabbitMQ: {e}")
         raise
 
 
