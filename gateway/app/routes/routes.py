@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Query, HTTPException
 from google.protobuf.json_format import MessageToDict
 from fastapi.responses import JSONResponse
+from sqlalchemy.future import select
 import aio_pika
 import os
 import uuid
@@ -10,10 +11,9 @@ import asyncio
 
 from proto.parser_pb2 import ParseRequest
 from proto.analyzer_pb2 import AnalyzeResponse
-from app.cache import redis
-from app.models import AnalysisResult
-from app.database import AsyncSessionLocal
-from sqlalchemy.future import select
+from app.cache.cache import redis
+from app.models.models import AnalysisResult
+from app.database.database import AsyncSessionLocal
 
 router = APIRouter()
 

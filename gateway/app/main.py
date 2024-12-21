@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from app.routes.routes import router
-from app.database import engine, Base
+from app.database.database import engine, Base
 
 app = FastAPI(
     title="WebSite Optimization Gateway",
