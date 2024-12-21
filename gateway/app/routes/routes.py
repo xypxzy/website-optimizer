@@ -3,7 +3,6 @@ from google.protobuf.json_format import MessageToDict
 from fastapi.responses import JSONResponse
 from sqlalchemy.future import select
 import aio_pika
-import os
 import uuid
 import json
 import logging
@@ -14,15 +13,17 @@ from proto.analyzer_pb2 import AnalyzeResponse
 from app.cache.cache import redis
 from app.models.models import AnalysisResult
 from app.database.database import AsyncSessionLocal
+from app.config import settings
+
 
 router = APIRouter()
 
-RABBITMQ_HOST = os.getenv("RABBITMQ_HOST", "rabbitmq")
-RABBITMQ_PORT = int(os.getenv("RABBITMQ_PORT", 5672))
-PARSE_QUEUE = os.getenv("RABBITMQ_PARSE_QUEUE", "parse_queue")
-RESULTS_QUEUE = os.getenv("RABBITMQ_RESULTS_QUEUE", "results_queue")
-RABBITMQ_USER = os.getenv("RABBITMQ_USER", "user")
-RABBITMQ_PASSWORD = os.getenv("RABBITMQ_PASSWORD", "password")
+RABBITMQ_HOST = settings.RABBITMQ_HOST
+RABBITMQ_PORT = settings.RABBITMQ_PORT
+PARSE_QUEUE = settings.RABBITMQ_PARSE_QUEUE
+RESULTS_QUEUE = settings.RABBITMQ_RESULTS_QUEUE
+RABBITMQ_USER = settings.RABBITMQ_USER
+RABBITMQ_PASSWORD = settings.RABBITMQ_PASSWORD
 
 logger = logging.getLogger("gateway")
 

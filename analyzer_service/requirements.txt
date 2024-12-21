@@ -10,3 +10,5 @@ SQLAlchemy==2.0.36
 asyncpg==0.30.0
 databases==0.9.0
 aioredis==2.0.1
+pydantic==2.10.4
+pydantic-settings==2.7.0

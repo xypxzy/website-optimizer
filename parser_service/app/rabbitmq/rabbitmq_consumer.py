@@ -1,20 +1,20 @@
 import aio_pika
-import os
 import traceback
 import logging
 from proto import parser_pb2
 from app.models.models import ParsedData
 from app.database.database import AsyncSessionLocal
 from app.services.parser import ParserServicer
+from app.config import settings
 
 logger = logging.getLogger(__name__)
 
-RABBITMQ_HOST = os.getenv("RABBITMQ_HOST", "rabbitmq")
-RABBITMQ_PORT = int(os.getenv("RABBITMQ_PORT", 5672))
-PARSE_QUEUE = os.getenv("RABBITMQ_PARSE_QUEUE", "parse_queue")
-ANALYZE_QUEUE = os.getenv("RABBITMQ_ANALYZE_QUEUE", "analyze_queue")
-RABBITMQ_USER = os.getenv("RABBITMQ_USER", "user")
-RABBITMQ_PASSWORD = os.getenv("RABBITMQ_PASSWORD", "password")
+RABBITMQ_HOST = settings.RABBITMQ_HOST
+RABBITMQ_PORT = settings.RABBITMQ_PORT
+PARSE_QUEUE = settings.RABBITMQ_PARSE_QUEUE
+ANALYZE_QUEUE = settings.RABBITMQ_ANALYZE_QUEUE
+RABBITMQ_USER = settings.RABBITMQ_USER
+RABBITMQ_PASSWORD = settings.RABBITMQ_PASSWORD
 
 
 async def consume_parse_queue():

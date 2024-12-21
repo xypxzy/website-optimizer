@@ -11,3 +11,5 @@ asyncpg==0.30.0
 databases==0.9.0
 aioredis==2.0.1
 alembic==1.14.0
+pydantic==2.10.4
+pydantic-settings==2.7.0

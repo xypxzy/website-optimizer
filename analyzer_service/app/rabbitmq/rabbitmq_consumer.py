@@ -3,16 +3,19 @@ import logging
 import traceback
 from proto import parser_pb2, analyzer_pb2
 from app.services.text_analyzer import TextAnalyzerServicer
-from app.config.config import (
-    RABBITMQ_HOST,
-    RABBITMQ_PORT,
-    RABBITMQ_USER,
-    RABBITMQ_PASSWORD,
-    ANALYZE_QUEUE,
-    RESULTS_QUEUE,
-)
+
+from app.config import settings
 
 logger = logging.getLogger(__name__)
+
+
+RABBITMQ_HOST = settings.RABBITMQ_HOST
+RABBITMQ_PORT = settings.RABBITMQ_PORT
+PARSE_QUEUE = settings.RABBITMQ_PARSE_QUEUE
+RESULTS_QUEUE = settings.RABBITMQ_RESULTS_QUEUE
+ANALYZE_QUEUE = settings.RABBITMQ_ANALYZE_QUEUE
+RABBITMQ_USER = settings.RABBITMQ_USER
+RABBITMQ_PASSWORD = settings.RABBITMQ_PASSWORD
 
 
 async def consume_analyze_queue():

@@ -53,20 +53,6 @@ services:
     image: parser_service:latest
     ports:
       - '50051:50051'
-    environment:
-      RABBITMQ_HOST: rabbitmq
-      RABBITMQ_PORT: 5672
-      RABBITMQ_PARSE_QUEUE: parse_queue
-      RABBITMQ_ANALYZE_QUEUE: analyze_queue
-      RABBITMQ_USER: user
-      RABBITMQ_PASSWORD: password
-      POSTGRES_HOST: postgres
-      POSTGRES_PORT: 5432
-      POSTGRES_USER: postgres_user
-      POSTGRES_PASSWORD: postgres_password
-      POSTGRES_DB: website_optimizer
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -81,20 +67,6 @@ services:
     image: analyzer_service:latest
     ports:
       - '50052:50052'
-    environment:
-      RABBITMQ_HOST: rabbitmq
-      RABBITMQ_PORT: 5672
-      RABBITMQ_ANALYZE_QUEUE: analyze_queue
-      RABBITMQ_RESULTS_QUEUE: results_queue
-      RABBITMQ_USER: user
-      RABBITMQ_PASSWORD: password
-      POSTGRES_HOST: postgres
-      POSTGRES_PORT: 5432
-      POSTGRES_USER: postgres_user
-      POSTGRES_PASSWORD: postgres_password
-      POSTGRES_DB: website_optimizer
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -115,23 +87,6 @@ services:
       - redis
     ports:
       - '8080:8080'
-    environment:
-      PARSER_SERVICE_HOST: 'parser_service'
-      ANALYZER_SERVICE_HOST: 'analyzer_service'
-      RABBITMQ_HOST: rabbitmq
-      RABBITMQ_PORT: 5672
-      RABBITMQ_PARSE_QUEUE: parse_queue
-      RABBITMQ_ANALYZE_QUEUE: analyze_queue
-      RABBITMQ_RESULTS_QUEUE: results_queue
-      RABBITMQ_USER: user
-      RABBITMQ_PASSWORD: password
-      POSTGRES_HOST: postgres
-      POSTGRES_PORT: 5432
-      POSTGRES_USER: postgres_user
-      POSTGRES_PASSWORD: postgres_password
-      POSTGRES_DB: website_optimizer
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
 
 volumes:
   postgres_data:
