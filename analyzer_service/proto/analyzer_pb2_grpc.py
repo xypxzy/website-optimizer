@@ -26,8 +26,7 @@ if _version_not_supported:
 
 
 class AnalyzerServiceStub(object):
-    """Описание gRPC-сервиса для анализа текстового контента из HTML-документа
-    """
+    """Missing associated documentation comment in .proto file."""
 
     def __init__(self, channel):
         """Constructor.
@@ -43,8 +42,7 @@ class AnalyzerServiceStub(object):
 
 
 class AnalyzerServiceServicer(object):
-    """Описание gRPC-сервиса для анализа текстового контента из HTML-документа
-    """
+    """Missing associated documentation comment in .proto file."""
 
     def Analyze(self, request, context):
         """Missing associated documentation comment in .proto file."""
@@ -69,8 +67,7 @@ def add_AnalyzerServiceServicer_to_server(servicer, server):
 
  # This class is part of an EXPERIMENTAL API.
 class AnalyzerService(object):
-    """Описание gRPC-сервиса для анализа текстового контента из HTML-документа
-    """
+    """Missing associated documentation comment in .proto file."""
 
     @staticmethod
     def Analyze(request,

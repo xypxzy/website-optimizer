@@ -9,6 +9,9 @@ import asyncio
 import os
 import traceback
 
+from app.database import engine, Base, AsyncSessionLocal
+from app.models import ParsedData
+
 logger = logging.getLogger(__name__)
 
 RABBITMQ_HOST = os.getenv("RABBITMQ_HOST", "rabbitmq")
@@ -20,12 +23,12 @@ RABBITMQ_PASSWORD = os.getenv("RABBITMQ_PASSWORD", "password")
 
 
 async def serve_grpc():
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+    server = grpc.aio.server(futures.ThreadPoolExecutor(max_workers=10))
     parser_pb2_grpc.add_ParserServiceServicer_to_server(ParserServicer(), server)
     server.add_insecure_port("[::]:50051")
-    server.start()
-    logger.info("gRPC server started on port 50051.")
-    await asyncio.Event().wait()  # Блокируем основной поток
+    await server.start()
+    logger.info("gRPC сервер запущен на порту 50051.")
+    await server.wait_for_termination()
 
 
 async def consume_parse_queue():
@@ -37,9 +40,7 @@ async def consume_parse_queue():
             password=RABBITMQ_PASSWORD,
         )
         channel = await connection.channel()
-        await channel.set_qos(
-            prefetch_count=10
-        )  # Увеличиваем prefetch_count для параллельной обработки
+        await channel.set_qos(prefetch_count=10)
 
         queue = await channel.declare_queue(PARSE_QUEUE, durable=True)
         logger.info(f"Подключились к RabbitMQ, прослушиваем очередь: {PARSE_QUEUE}")
@@ -60,6 +61,16 @@ async def consume_parse_queue():
                         parser = ParserServicer()
                         parse_response = parser.Parse(parse_request, None)
                         parse_response.correlation_id = correlation_id
+
+                        # Сохранение результата в базу данных
+                        async with AsyncSessionLocal() as session:
+                            parsed = ParsedData(
+                                correlation_id=correlation_id,
+                                content=parse_response.content,
+                                status="parsed",
+                            )
+                            session.add(parsed)
+                            await session.commit()
 
                         # Публикация в analyze_queue
                         await channel.default_exchange.publish(
@@ -82,6 +93,8 @@ async def consume_parse_queue():
 
 async def main():
     logging.basicConfig(level=logging.INFO)
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
     await asyncio.gather(
         serve_grpc(),
         consume_parse_queue(),

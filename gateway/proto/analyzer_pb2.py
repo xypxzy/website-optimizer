@@ -24,7 +24,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0e\x61nalyzer.proto\x12\x08\x61nalyzer\"9\n\x0e\x41nalyzeRequest\x12\x0f\n\x07\x63ontent\x18\x01 \x01(\t\x12\x16\n\x0e\x63orrelation_id\x18\x02 \x01(\t\"\xe1\x01\n\x0f\x41nalyzeResponse\x12T\n\x16\x66requency_distribution\x18\x01 \x03(\x0b\x32\x34.analyzer.AnalyzeResponse.FrequencyDistributionEntry\x12\"\n\x08\x65ntities\x18\x02 \x03(\x0b\x32\x10.analyzer.Entity\x12\x16\n\x0e\x63orrelation_id\x18\x03 \x01(\t\x1a<\n\x1a\x46requencyDistributionEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x05:\x02\x38\x01\"%\n\x06\x45ntity\x12\x0c\n\x04type\x18\x01 \x01(\t\x12\r\n\x05names\x18\x02 \x03(\t2Q\n\x0f\x41nalyzerService\x12>\n\x07\x41nalyze\x12\x18.analyzer.AnalyzeRequest\x1a\x19.analyzer.AnalyzeResponseb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0e\x61nalyzer.proto\x12\x08\x61nalyzer\"9\n\x0e\x41nalyzeRequest\x12\x16\n\x0e\x63orrelation_id\x18\x01 \x01(\t\x12\x0f\n\x07\x63ontent\x18\x02 \x01(\t\"\xe1\x01\n\x0f\x41nalyzeResponse\x12\x16\n\x0e\x63orrelation_id\x18\x01 \x01(\t\x12T\n\x16\x66requency_distribution\x18\x02 \x03(\x0b\x32\x34.analyzer.AnalyzeResponse.FrequencyDistributionEntry\x12\"\n\x08\x65ntities\x18\x03 \x03(\x0b\x32\x10.analyzer.Entity\x1a<\n\x1a\x46requencyDistributionEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x05:\x02\x38\x01\"$\n\x06\x45ntity\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x0c\n\x04type\x18\x02 \x01(\t2Q\n\x0f\x41nalyzerService\x12>\n\x07\x41nalyze\x12\x18.analyzer.AnalyzeRequest\x1a\x19.analyzer.AnalyzeResponseb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -40,7 +40,7 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_ANALYZERESPONSE_FREQUENCYDISTRIBUTIONENTRY']._serialized_start=253
   _globals['_ANALYZERESPONSE_FREQUENCYDISTRIBUTIONENTRY']._serialized_end=313
   _globals['_ENTITY']._serialized_start=315
-  _globals['_ENTITY']._serialized_end=352
-  _globals['_ANALYZERSERVICE']._serialized_start=354
-  _globals['_ANALYZERSERVICE']._serialized_end=435
+  _globals['_ENTITY']._serialized_end=351
+  _globals['_ANALYZERSERVICE']._serialized_start=353
+  _globals['_ANALYZERSERVICE']._serialized_end=434
 # @@protoc_insertion_point(module_scope)

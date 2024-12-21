@@ -7,14 +7,14 @@ service ParserService {
   rpc Parse(ParseRequest) returns (ParseResponse);
 }
 
-// Сообщение с запросом для парсинга
+// Запрос на парсинг URL
 message ParseRequest {
   string url = 1;
-  string correlation_id = 2;  // Добавлено
+  string correlation_id = 2;
 }
 
-// Сообщение с ответом для парсинга
+// Ответ парсинга
 message ParseResponse {
-  string content = 1;
-  string correlation_id = 2;  // Добавлено
+  string correlation_id = 1;
+  string content = 2; // HTML контент страницы
 }
