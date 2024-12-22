@@ -4,6 +4,6 @@ __pycache__
 *.pyd
 *.db
 *.sqlite3
-*.env
+# *.env
 .wheels
 .git

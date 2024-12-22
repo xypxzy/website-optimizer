@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     RABBITMQ_PORT: int = 5672
     RABBITMQ_PARSE_QUEUE: str = "parse_queue"
     RABBITMQ_ANALYZE_QUEUE: str = "analyze_queue"
+    RABBITMQ_RESULTS_QUEUE: str = "results_queue"
     RABBITMQ_USER: str = "user"
     RABBITMQ_PASSWORD: str = "password"
 
@@ -29,4 +30,5 @@ class Settings(BaseSettings):
         env_file_encoding = "utf-8"
 
 
+# Ensure the settings are loaded from the .env file
 settings = Settings()

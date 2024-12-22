@@ -2,10 +2,8 @@ import logging
 import requests
 from bs4 import BeautifulSoup
 import grpc
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
-from webdriver_manager.chrome import ChromeDriverManager
+from app.services.driver_manager import DriverManager
 
 from proto import parser_pb2, parser_pb2_grpc
 
@@ -66,17 +64,13 @@ class ParserServicer(parser_pb2_grpc.ParserServiceServicer):
             logger.error(f"Error parsing static site {url}: {e}")
             return None
 
-    def parse_dynamic_site(self, url: str) -> BeautifulSoup:
-        """Parses dynamic sites."""
+    async def parse_dynamic_site(self, url: str) -> BeautifulSoup:
+        """Parses dynamic sites using a singleton WebDriver."""
         logger.info(f"Parsing dynamic site: {url}")
         try:
-            options = self.get_selenium_options()
-            driver = webdriver.Chrome(
-                service=Service(ChromeDriverManager().install()), options=options
-            )
+            driver = await DriverManager.get_instance()
             driver.get(url)
             html_content = driver.page_source
-            driver.quit()
             soup = self.parse_html(html_content)
             logger.info(f"Dynamic site successfully parsed: {url}")
             return soup
