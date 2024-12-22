@@ -24,7 +24,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0e\x61nalyzer.proto\x12\x08\x61nalyzer\"9\n\x0e\x41nalyzeRequest\x12\x16\n\x0e\x63orrelation_id\x18\x01 \x01(\t\x12\x0f\n\x07\x63ontent\x18\x02 \x01(\t\"\xe1\x01\n\x0f\x41nalyzeResponse\x12\x16\n\x0e\x63orrelation_id\x18\x01 \x01(\t\x12T\n\x16\x66requency_distribution\x18\x02 \x03(\x0b\x32\x34.analyzer.AnalyzeResponse.FrequencyDistributionEntry\x12\"\n\x08\x65ntities\x18\x03 \x03(\x0b\x32\x10.analyzer.Entity\x1a<\n\x1a\x46requencyDistributionEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x05:\x02\x38\x01\"$\n\x06\x45ntity\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x0c\n\x04type\x18\x02 \x01(\t2Q\n\x0f\x41nalyzerService\x12>\n\x07\x41nalyze\x12\x18.analyzer.AnalyzeRequest\x1a\x19.analyzer.AnalyzeResponseb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0e\x61nalyzer.proto\x12\x08\x61nalyzer\"9\n\x0e\x41nalyzeRequest\x12\x16\n\x0e\x63orrelation_id\x18\x01 \x01(\t\x12\x0f\n\x07\x63ontent\x18\x02 \x01(\t\"\xa3\x03\n\x0f\x41nalyzeResponse\x12\x16\n\x0e\x63orrelation_id\x18\x01 \x01(\t\x12T\n\x16\x66requency_distribution\x18\x02 \x03(\x0b\x32\x34.analyzer.AnalyzeResponse.FrequencyDistributionEntry\x12\x32\n\x08\x65ntities\x18\x03 \x03(\x0b\x32 .analyzer.AnalyzeResponse.Entity\x12\x36\n\tsentiment\x18\x04 \x01(\x0b\x32#.analyzer.AnalyzeResponse.Sentiment\x1a<\n\x1a\x46requencyDistributionEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x05:\x02\x38\x01\x1a$\n\x06\x45ntity\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x0c\n\x04type\x18\x02 \x01(\t\x1aR\n\tSentiment\x12\x10\n\x08positive\x18\x01 \x01(\x01\x12\x10\n\x08negative\x18\x02 \x01(\x01\x12\x0f\n\x07neutral\x18\x03 \x01(\x01\x12\x10\n\x08\x63ompound\x18\x04 \x01(\x01\x32Q\n\x0f\x41nalyzerService\x12>\n\x07\x41nalyze\x12\x18.analyzer.AnalyzeRequest\x1a\x19.analyzer.AnalyzeResponseb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -36,11 +36,13 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_ANALYZEREQUEST']._serialized_start=28
   _globals['_ANALYZEREQUEST']._serialized_end=85
   _globals['_ANALYZERESPONSE']._serialized_start=88
-  _globals['_ANALYZERESPONSE']._serialized_end=313
-  _globals['_ANALYZERESPONSE_FREQUENCYDISTRIBUTIONENTRY']._serialized_start=253
-  _globals['_ANALYZERESPONSE_FREQUENCYDISTRIBUTIONENTRY']._serialized_end=313
-  _globals['_ENTITY']._serialized_start=315
-  _globals['_ENTITY']._serialized_end=351
-  _globals['_ANALYZERSERVICE']._serialized_start=353
-  _globals['_ANALYZERSERVICE']._serialized_end=434
+  _globals['_ANALYZERESPONSE']._serialized_end=507
+  _globals['_ANALYZERESPONSE_FREQUENCYDISTRIBUTIONENTRY']._serialized_start=325
+  _globals['_ANALYZERESPONSE_FREQUENCYDISTRIBUTIONENTRY']._serialized_end=385
+  _globals['_ANALYZERESPONSE_ENTITY']._serialized_start=387
+  _globals['_ANALYZERESPONSE_ENTITY']._serialized_end=423
+  _globals['_ANALYZERESPONSE_SENTIMENT']._serialized_start=425
+  _globals['_ANALYZERESPONSE_SENTIMENT']._serialized_end=507
+  _globals['_ANALYZERSERVICE']._serialized_start=509
+  _globals['_ANALYZERSERVICE']._serialized_end=590
 # @@protoc_insertion_point(module_scope)

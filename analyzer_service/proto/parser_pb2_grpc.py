@@ -26,8 +26,7 @@ if _version_not_supported:
 
 
 class ParserServiceStub(object):
-    """Описание gRPC-сервиса для парсинга веб-страниц
-    """
+    """Missing associated documentation comment in .proto file."""
 
     def __init__(self, channel):
         """Constructor.
@@ -43,8 +42,7 @@ class ParserServiceStub(object):
 
 
 class ParserServiceServicer(object):
-    """Описание gRPC-сервиса для парсинга веб-страниц
-    """
+    """Missing associated documentation comment in .proto file."""
 
     def Parse(self, request, context):
         """Missing associated documentation comment in .proto file."""
@@ -69,8 +67,7 @@ def add_ParserServiceServicer_to_server(servicer, server):
 
  # This class is part of an EXPERIMENTAL API.
 class ParserService(object):
-    """Описание gRPC-сервиса для парсинга веб-страниц
-    """
+    """Missing associated documentation comment in .proto file."""
 
     @staticmethod
     def Parse(request,

@@ -1,25 +1,33 @@
+// proto/analyzer.proto
+
 syntax = "proto3";
 
 package analyzer;
 
-service AnalyzerService {
-  rpc Analyze(AnalyzeRequest) returns (AnalyzeResponse);
-}
-
-// Запрос для анализа текста
 message AnalyzeRequest {
   string correlation_id = 1;
   string content = 2;
 }
 
-// Ответ на запрос анализа текста
 message AnalyzeResponse {
   string correlation_id = 1;
   map<string, int32> frequency_distribution = 2;
   repeated Entity entities = 3;
+  Sentiment sentiment = 4;
+
+  message Entity {
+    string name = 1;
+    string type = 2;
+  }
+
+  message Sentiment {
+    double positive = 1;
+    double negative = 2;
+    double neutral = 3;
+    double compound = 4;
+  }
 }
 
-message Entity {
-  string name = 1;
-  string type = 2;
+service AnalyzerService {
+  rpc Analyze (AnalyzeRequest) returns (AnalyzeResponse);
 }
