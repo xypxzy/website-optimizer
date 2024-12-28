@@ -1,5 +1,3 @@
-// proto/analyzer.proto
-
 syntax = "proto3";
 
 package analyzer;

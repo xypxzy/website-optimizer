@@ -1,15 +1,19 @@
 import logging
+import spacy
 from collections import Counter
 import nltk
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from nltk.sentiment import SentimentIntensityAnalyzer
-import spacy
 from proto import analyzer_pb2_grpc, analyzer_pb2
+
+
+nltk.download("stopwords")
+nltk.download("vader_lexicon")
+nltk.download("punkt_tab")
 
 logger = logging.getLogger(__name__)
 
-# Инициализация NLTK инструментов
 try:
     nltk_stopwords_en = set(stopwords.words("english"))
     nltk_stopwords_ru = set(stopwords.words("russian"))
@@ -97,7 +101,9 @@ async def analyze_text(content):
         if nlp:
             doc_full = nlp(content)
             for ent in doc_full.ents:
-                entities.append(analyzer_pb2.Entity(name=ent.text, type=ent.label_))
+                entities.append(
+                    analyzer_pb2.AnalyzeResponse.Entity(name=ent.text, type=ent.label_)
+                )
             logger.debug(f"Extracted Entities: {entities}")
         else:
             logger.warning("spaCy model not loaded. Skipping entity extraction.")
@@ -109,7 +115,7 @@ async def analyze_text(content):
         analyze_response = analyzer_pb2.AnalyzeResponse(
             frequency_distribution=dict(frequency_distribution),
             entities=entities,
-            sentiment=analyzer_pb2.Sentiment(
+            sentiment=analyzer_pb2.AnalyzeResponse.Sentiment(
                 positive=sentiment_scores.get("pos", 0.0),
                 negative=sentiment_scores.get("neg", 0.0),
                 neutral=sentiment_scores.get("neu", 0.0),
