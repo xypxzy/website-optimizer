@@ -7,7 +7,6 @@ from nltk.tokenize import word_tokenize
 from nltk.sentiment import SentimentIntensityAnalyzer
 from proto import analyzer_pb2
 
-
 nltk.download("stopwords")
 nltk.download("vader_lexicon")
 nltk.download("punkt_tab")
@@ -53,14 +52,38 @@ def detect_language(content):
         return "unknown"
 
 
-async def analyze_text(content):
-    """
-    Функция для анализа текста.
-    Возвращает AnalyzeResponse.
-    """
-    try:
+class TextAnalyzer:
+    def __init__(self, content: str):
+        self.content = content
+        self.text_data = analyzer_pb2.AnalyzeResponse()
+        self.recommendations = []
+
+    async def analyze(
+        self,
+    ) -> tuple[analyzer_pb2.AnalyzeResponse, list[analyzer_pb2.Recommendation]]:
+        """
+        Analyzes the text content and generates recommendations.
+        Returns (AnalyzeResponse, [Recommendation]).
+        """
+        try:
+            self.analyze_frequency_distribution()
+            self.analyze_entities()
+            self.analyze_sentiment()
+
+        except Exception as e:
+            logger.error(f"Error during text analysis: {e}")
+            self.recommendations.append(
+                analyzer_pb2.Recommendation(
+                    message="An error occurred during text analysis. Check logs for details.",
+                    category="TEXT",
+                )
+            )
+
+        return self.text_data, self.recommendations
+
+    def analyze_frequency_distribution(self):
         # Определение языка текста
-        language = detect_language(content)
+        language = detect_language(self.content)
         if language.startswith("ru"):
             stopwords_set = nltk_stopwords_ru
             nlp = nlp_ru
@@ -75,7 +98,7 @@ async def analyze_text(content):
             logger.debug(f"Detected language: {language}")
 
         # Токенизация текста
-        tokens = word_tokenize(content.lower())
+        tokens = word_tokenize(self.content.lower())
         logger.debug(f"Tokens: {tokens}")
 
         # Удаление стоп-слов и неалфавитных токенов
@@ -102,10 +125,21 @@ async def analyze_text(content):
             for word, count in frequency_distribution.items()
         ]
 
+        self.text_data.frequency_distribution.extend(frequency_distribution_entries)
+
+    def analyze_entities(self):
         # Извлечение сущностей с помощью spaCy
         entities = []
+        language = detect_language(self.content)
+        if language.startswith("ru"):
+            nlp = nlp_ru
+        elif language.startswith("en"):
+            nlp = nlp_en
+        else:
+            nlp = None
+
         if nlp:
-            doc_full = nlp(content)
+            doc_full = nlp(self.content)
             for ent in doc_full.ents:
                 entities.append(
                     analyzer_pb2.AnalyzeResponse.Entity(name=ent.text, type=ent.label_)
@@ -114,24 +148,13 @@ async def analyze_text(content):
         else:
             logger.warning("spaCy model not loaded. Skipping entity extraction.")
 
+        self.text_data.entities.extend(entities)
+
+    def analyze_sentiment(self):
         # Анализ тональности
-        sentiment_scores = sia.polarity_scores(content)
+        sentiment_scores = sia.polarity_scores(self.content)
         logger.debug(f"Sentiment Scores: {sentiment_scores}")
 
-        analyze_response = analyzer_pb2.AnalyzeResponse(
-            frequency_distribution=frequency_distribution_entries,
-            entities=entities,
-            sentiment=analyzer_pb2.Sentiment(
-                positive=sentiment_scores["pos"],
-                negative=sentiment_scores["neg"],
-                neutral=sentiment_scores["neu"],
-            ),
-        )
-
-        logger.info("Analysis completed successfully.")
-
-        return analyze_response
-
-    except Exception as e:
-        logger.error(f"Error analyzing content: {e}")
-        raise e
+        self.text_data.sentiment.positive = sentiment_scores["pos"]
+        self.text_data.sentiment.negative = sentiment_scores["neg"]
+        self.text_data.sentiment.neutral = sentiment_scores["neu"]

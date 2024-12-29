@@ -1,60 +1,63 @@
 import logging
-from proto.analyzer_pb2 import AnalyzeResponse
 
-from app.services.text_analyzer import analyze_text
-from app.services.seo_analyzer import analyze_seo
-from app.services.perfomance_analyzer import analyze_performance
-from app.services.accessibility_analyzer import analyze_accessibility
-from app.services.security_analyzer import analyze_security
-from app.services.structure_analyzer import analyze_structure
+from proto.analyzer_pb2 import AnalyzeResponse
+from .text_analyzer import TextAnalyzer
+from .seo_analyzer import SEOAnalyzer
+from .performance_analyzer import PerformanceAnalyzer
+from .accessibility_analyzer import AccessibilityAnalyzer
+from .security_analyzer import SecurityAnalyzer
+from .structure_analyzer import StructureAnalyzer
 
 logger = logging.getLogger(__name__)
 
 
 async def analyze_all(content: str, url: str) -> AnalyzeResponse:
     """
-    Вызывает все анализаторы последовательно,
-    формирует единый AnalyzeResponse со списком рекомендаций.
+    Calls all analyzers sequentially,
+    forms a single AnalyzeResponse with a list of recommendations.
     """
 
-    # Изначально пустой ответ
+    # Initially empty response
     response = AnalyzeResponse()
 
-    # 1) Анализ текста
-    text_result = await analyze_text(content)
-    response.frequency_distribution.extend(text_result.frequency_distribution)
-    response.entities.extend(text_result.entities)
-    response.sentiment.CopyFrom(text_result.sentiment)
-    recommendations = list(text_result.recommendations)  # частичный список рекомендаций
+    # 1) Text analyzer
+    text_analyzer = TextAnalyzer(content)
+    text_data, text_recs = await text_analyzer.analyze()
+    response.frequency_distribution.extend(text_data.frequency_distribution)
+    response.entities.extend(text_data.entities)
+    response.sentiment.CopyFrom(text_data.sentiment)
+    recommendations = list(text_recs)
 
-    # 2) SEO-анализ
-    seo_data, seo_recs = await analyze_seo(url)
+    # 2) SEO analyzer
+    seo_analyzer = SEOAnalyzer(url)
+    seo_data, seo_recs = await seo_analyzer.analyze()
     response.seo_data.CopyFrom(seo_data)
     recommendations.extend(seo_recs)
 
-    # 3) Анализ производительности
-    perf_data, perf_recs = await analyze_performance(url)
+    # 3) Performance analyzer
+    perf_analyzer = PerformanceAnalyzer(url)
+    perf_data, perf_recs = await perf_analyzer.analyze()
     response.performance_data.CopyFrom(perf_data)
     recommendations.extend(perf_recs)
 
-    # 4) Доступность
-    a11y_data, a11y_recs = await analyze_accessibility(url)
+    # 4) Accessibility analyzer
+    a11y_analyzer = AccessibilityAnalyzer(url)
+    a11y_data, a11y_recs = await a11y_analyzer.analyze()
     response.accessibility_data.CopyFrom(a11y_data)
     recommendations.extend(a11y_recs)
 
-    # 5) Безопасность
-    security_data, sec_recs = await analyze_security(url)
+    # 5) Security analyzer
+    security_analyzer = SecurityAnalyzer(url)
+    security_data, sec_recs = await security_analyzer.analyze()
     response.security_data.CopyFrom(security_data)
     recommendations.extend(sec_recs)
 
-    # 6) Структура
-    structure_data, struct_recs = await analyze_structure(url)
+    # 6) Structure analyzer
+    structure_analyzer = StructureAnalyzer(url)
+    structure_data, struct_recs = await structure_analyzer.analyze()
     response.structure_data.CopyFrom(structure_data)
     recommendations.extend(struct_recs)
 
-    # Собираем все рекомендации в один список
     response.recommendations.extend(recommendations)
-
-    logger.info(f"response: {response}")
 
     return response
