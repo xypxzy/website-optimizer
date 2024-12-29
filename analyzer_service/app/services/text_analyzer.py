@@ -130,33 +130,3 @@ async def analyze_text(content):
     except Exception as e:
         logger.error(f"Error analyzing content: {e}")
         raise e
-
-
-class TextAnalyzerServicer(analyzer_pb2_grpc.AnalyzerServiceServicer):
-    """
-    gRPC service for analyzing text content from an HTML document.
-    """
-
-    def __init__(self):
-        """Initialization of NLP tools and logger"""
-        logger.info("TextAnalyzerService initialized.")
-
-    async def Analyze(self, request, context):
-        """
-        Performs content analysis and returns AnalyzeResponse.
-        """
-        content = request.content
-        correlation_id = request.correlation_id
-
-        logger.info(f"Analyzing content with correlation_id: {correlation_id}")
-
-        try:
-            analyze_response = await analyze_text(content)
-            analyze_response.correlation_id = correlation_id
-            return analyze_response
-
-        except Exception as e:
-            logger.error(f"Error analyzing content: {e}")
-            context.set_details(str(e))
-            context.set_code(grpc.StatusCode.INTERNAL)
-            return analyzer_pb2.AnalyzeResponse()

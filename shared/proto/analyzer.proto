@@ -5,27 +5,96 @@ package analyzer;
 message AnalyzeRequest {
   string correlation_id = 1;
   string content = 2;
+  string url = 3;
+}
+
+message FrequencyDistributionEntry {
+  string key = 1;
+  int32 value = 2;
+}
+
+message Entity {
+  string name = 1;
+  string type = 2;
+}
+
+message Sentiment {
+  double positive = 1;
+  double negative = 2;
+  double neutral = 3;
+  double compound = 4;
+}
+
+message SEOData {
+  bool has_title_tag = 1;
+  bool has_description_tag = 2;
+  int32 title_length = 3;
+  int32 description_length = 4;
+  // Доп. метрики...
+}
+
+message PerformanceData {
+  double page_load_time = 1; // условно, время загрузки
+  double largest_contentful_paint = 2; // LCP
+  double cumulative_layout_shift = 3;  // CLS
+  double first_input_delay = 4;        // FID
+  // и т.д.
+}
+
+message AccessibilityData {
+  bool has_alt_for_images = 1;
+  bool has_proper_headings = 2;
+  // и т.д.
+}
+
+message SecurityData {
+  bool uses_https = 1;
+  bool valid_ssl_certificate = 2;
+  bool has_security_headers = 3;
+  // и т.д.
+}
+
+message StructureData {
+  int32 broken_links_count = 1;
+  int32 redirect_count = 2;
+  bool has_sitemap = 3;
+  bool has_robots_txt = 4;
+  // и т.д.
+}
+
+// Рекомендации (общие для всех анализаторов)
+message Recommendation {
+  string message = 1;
+  string category = 2; // TEXT, SEO, PERFORMANCE, SECURITY, A11Y, STRUCTURE...
 }
 
 message AnalyzeResponse {
   string correlation_id = 1;
-  map<string, int32> frequency_distribution = 2;
+
+  // Text
+  repeated FrequencyDistributionEntry frequency_distribution = 2;
   repeated Entity entities = 3;
   Sentiment sentiment = 4;
 
-  message Entity {
-    string name = 1;
-    string type = 2;
-  }
+  // SEO
+  SEOData seo_data = 5;
 
-  message Sentiment {
-    double positive = 1;
-    double negative = 2;
-    double neutral = 3;
-    double compound = 4;
-  }
+  // Performance
+  PerformanceData performance_data = 6;
+
+  // Accessibility (A11Y)
+  AccessibilityData accessibility_data = 7;
+
+  // Security
+  SecurityData security_data = 8;
+
+  // Structure
+  StructureData structure_data = 9;
+
+  // Список рекомендаций
+  repeated Recommendation recommendations = 10;
 }
 
 service AnalyzerService {
-  rpc Analyze (AnalyzeRequest) returns (AnalyzeResponse);
+  rpc Analyze(AnalyzeRequest) returns (AnalyzeResponse);
 }

@@ -24,25 +24,35 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0e\x61nalyzer.proto\x12\x08\x61nalyzer\"9\n\x0e\x41nalyzeRequest\x12\x16\n\x0e\x63orrelation_id\x18\x01 \x01(\t\x12\x0f\n\x07\x63ontent\x18\x02 \x01(\t\"\xa3\x03\n\x0f\x41nalyzeResponse\x12\x16\n\x0e\x63orrelation_id\x18\x01 \x01(\t\x12T\n\x16\x66requency_distribution\x18\x02 \x03(\x0b\x32\x34.analyzer.AnalyzeResponse.FrequencyDistributionEntry\x12\x32\n\x08\x65ntities\x18\x03 \x03(\x0b\x32 .analyzer.AnalyzeResponse.Entity\x12\x36\n\tsentiment\x18\x04 \x01(\x0b\x32#.analyzer.AnalyzeResponse.Sentiment\x1a<\n\x1a\x46requencyDistributionEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x05:\x02\x38\x01\x1a$\n\x06\x45ntity\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x0c\n\x04type\x18\x02 \x01(\t\x1aR\n\tSentiment\x12\x10\n\x08positive\x18\x01 \x01(\x01\x12\x10\n\x08negative\x18\x02 \x01(\x01\x12\x0f\n\x07neutral\x18\x03 \x01(\x01\x12\x10\n\x08\x63ompound\x18\x04 \x01(\x01\x32Q\n\x0f\x41nalyzerService\x12>\n\x07\x41nalyze\x12\x18.analyzer.AnalyzeRequest\x1a\x19.analyzer.AnalyzeResponseb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0e\x61nalyzer.proto\x12\x08\x61nalyzer\"F\n\x0e\x41nalyzeRequest\x12\x16\n\x0e\x63orrelation_id\x18\x01 \x01(\t\x12\x0f\n\x07\x63ontent\x18\x02 \x01(\t\x12\x0b\n\x03url\x18\x03 \x01(\t\"8\n\x1a\x46requencyDistributionEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x05\"$\n\x06\x45ntity\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x0c\n\x04type\x18\x02 \x01(\t\"R\n\tSentiment\x12\x10\n\x08positive\x18\x01 \x01(\x01\x12\x10\n\x08negative\x18\x02 \x01(\x01\x12\x0f\n\x07neutral\x18\x03 \x01(\x01\x12\x10\n\x08\x63ompound\x18\x04 \x01(\x01\"o\n\x07SEOData\x12\x15\n\rhas_title_tag\x18\x01 \x01(\x08\x12\x1b\n\x13has_description_tag\x18\x02 \x01(\x08\x12\x14\n\x0ctitle_length\x18\x03 \x01(\x05\x12\x1a\n\x12\x64\x65scription_length\x18\x04 \x01(\x05\"\x87\x01\n\x0fPerformanceData\x12\x16\n\x0epage_load_time\x18\x01 \x01(\x01\x12 \n\x18largest_contentful_paint\x18\x02 \x01(\x01\x12\x1f\n\x17\x63umulative_layout_shift\x18\x03 \x01(\x01\x12\x19\n\x11\x66irst_input_delay\x18\x04 \x01(\x01\"L\n\x11\x41\x63\x63\x65ssibilityData\x12\x1a\n\x12has_alt_for_images\x18\x01 \x01(\x08\x12\x1b\n\x13has_proper_headings\x18\x02 \x01(\x08\"_\n\x0cSecurityData\x12\x12\n\nuses_https\x18\x01 \x01(\x08\x12\x1d\n\x15valid_ssl_certificate\x18\x02 \x01(\x08\x12\x1c\n\x14has_security_headers\x18\x03 \x01(\x08\"p\n\rStructureData\x12\x1a\n\x12\x62roken_links_count\x18\x01 \x01(\x05\x12\x16\n\x0eredirect_count\x18\x02 \x01(\x05\x12\x13\n\x0bhas_sitemap\x18\x03 \x01(\x08\x12\x16\n\x0ehas_robots_txt\x18\x04 \x01(\x08\"3\n\x0eRecommendation\x12\x0f\n\x07message\x18\x01 \x01(\t\x12\x10\n\x08\x63\x61tegory\x18\x02 \x01(\t\"\xe1\x03\n\x0f\x41nalyzeResponse\x12\x16\n\x0e\x63orrelation_id\x18\x01 \x01(\t\x12\x44\n\x16\x66requency_distribution\x18\x02 \x03(\x0b\x32$.analyzer.FrequencyDistributionEntry\x12\"\n\x08\x65ntities\x18\x03 \x03(\x0b\x32\x10.analyzer.Entity\x12&\n\tsentiment\x18\x04 \x01(\x0b\x32\x13.analyzer.Sentiment\x12#\n\x08seo_data\x18\x05 \x01(\x0b\x32\x11.analyzer.SEOData\x12\x33\n\x10performance_data\x18\x06 \x01(\x0b\x32\x19.analyzer.PerformanceData\x12\x37\n\x12\x61\x63\x63\x65ssibility_data\x18\x07 \x01(\x0b\x32\x1b.analyzer.AccessibilityData\x12-\n\rsecurity_data\x18\x08 \x01(\x0b\x32\x16.analyzer.SecurityData\x12/\n\x0estructure_data\x18\t \x01(\x0b\x32\x17.analyzer.StructureData\x12\x31\n\x0frecommendations\x18\n \x03(\x0b\x32\x18.analyzer.Recommendation2Q\n\x0f\x41nalyzerService\x12>\n\x07\x41nalyze\x12\x18.analyzer.AnalyzeRequest\x1a\x19.analyzer.AnalyzeResponseb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'analyzer_pb2', _globals)
 if not _descriptor._USE_C_DESCRIPTORS:
   DESCRIPTOR._loaded_options = None
-  _globals['_ANALYZERESPONSE_FREQUENCYDISTRIBUTIONENTRY']._loaded_options = None
-  _globals['_ANALYZERESPONSE_FREQUENCYDISTRIBUTIONENTRY']._serialized_options = b'8\001'
   _globals['_ANALYZEREQUEST']._serialized_start=28
-  _globals['_ANALYZEREQUEST']._serialized_end=85
-  _globals['_ANALYZERESPONSE']._serialized_start=88
-  _globals['_ANALYZERESPONSE']._serialized_end=507
-  _globals['_ANALYZERESPONSE_FREQUENCYDISTRIBUTIONENTRY']._serialized_start=325
-  _globals['_ANALYZERESPONSE_FREQUENCYDISTRIBUTIONENTRY']._serialized_end=385
-  _globals['_ANALYZERESPONSE_ENTITY']._serialized_start=387
-  _globals['_ANALYZERESPONSE_ENTITY']._serialized_end=423
-  _globals['_ANALYZERESPONSE_SENTIMENT']._serialized_start=425
-  _globals['_ANALYZERESPONSE_SENTIMENT']._serialized_end=507
-  _globals['_ANALYZERSERVICE']._serialized_start=509
-  _globals['_ANALYZERSERVICE']._serialized_end=590
+  _globals['_ANALYZEREQUEST']._serialized_end=98
+  _globals['_FREQUENCYDISTRIBUTIONENTRY']._serialized_start=100
+  _globals['_FREQUENCYDISTRIBUTIONENTRY']._serialized_end=156
+  _globals['_ENTITY']._serialized_start=158
+  _globals['_ENTITY']._serialized_end=194
+  _globals['_SENTIMENT']._serialized_start=196
+  _globals['_SENTIMENT']._serialized_end=278
+  _globals['_SEODATA']._serialized_start=280
+  _globals['_SEODATA']._serialized_end=391
+  _globals['_PERFORMANCEDATA']._serialized_start=394
+  _globals['_PERFORMANCEDATA']._serialized_end=529
+  _globals['_ACCESSIBILITYDATA']._serialized_start=531
+  _globals['_ACCESSIBILITYDATA']._serialized_end=607
+  _globals['_SECURITYDATA']._serialized_start=609
+  _globals['_SECURITYDATA']._serialized_end=704
+  _globals['_STRUCTUREDATA']._serialized_start=706
+  _globals['_STRUCTUREDATA']._serialized_end=818
+  _globals['_RECOMMENDATION']._serialized_start=820
+  _globals['_RECOMMENDATION']._serialized_end=871
+  _globals['_ANALYZERESPONSE']._serialized_start=874
+  _globals['_ANALYZERESPONSE']._serialized_end=1355
+  _globals['_ANALYZERSERVICE']._serialized_start=1357
+  _globals['_ANALYZERSERVICE']._serialized_end=1438
 # @@protoc_insertion_point(module_scope)

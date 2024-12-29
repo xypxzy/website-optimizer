@@ -100,6 +100,12 @@ async def get_results(correlation_id: str):
 
         response = {
             "status": analysis.status,
+            "seo_data": analysis.seo_data,
+            "performance_data": analysis.performance_data,
+            "accessibility_data": analysis.accessibility_data,
+            "security_data": analysis.security_data,
+            "structure_data": analysis.structure_data,
+            "recommendations": analysis.recommendations,
             "frequency_distribution": analysis.frequency_distribution,
             "entities": analysis.entities,
         }
@@ -150,6 +156,12 @@ async def update_results(correlation_id, analyze_response):
             # Update cache in Redis
             response = {
                 "status": analysis.status,
+                "seo_data": analysis.seo_data,
+                "performance_data": analysis.performance_data,
+                "accessibility_data": analysis.accessibility_data,
+                "security_data": analysis.security_data,
+                "structure_data": analysis.structure_data,
+                "recommendations": analysis.recommendations,
                 "frequency_distribution": analysis.frequency_distribution,
                 "entities": analysis.entities,
             }
