@@ -47,12 +47,14 @@ async def consume_parse_queue():
                         parser = ParserServicer()
                         parse_response = parser.Parse(parse_request, None)
                         parse_response.correlation_id = correlation_id
+                        parse_response.url = url
 
                         # Save result to database
                         async with AsyncSessionLocal() as session:
                             parsed = ParsedData(
                                 correlation_id=correlation_id,
                                 content=parse_response.content,
+                                url=url,
                                 status="parsed",
                             )
                             session.add(parsed)

@@ -1,8 +1,8 @@
 import aio_pika
 import logging
 import traceback
-from proto import parser_pb2, analyzer_pb2
-from app.services.text_analyzer import analyze_text
+from proto import parser_pb2
+from app.services.aggregator import analyze_all
 
 from app.config import settings
 
@@ -41,13 +41,14 @@ async def consume_analyze_queue():
                         parse_response.ParseFromString(message.body)
                         correlation_id = parse_response.correlation_id
                         content = parse_response.content
+                        url = parse_response.url
 
                         logger.info(
                             f"Analyzing content with correlation_id: {correlation_id}"
                         )
 
                         # Perform analysis
-                        analyze_response = await analyze_text(content)
+                        analyze_response = await analyze_all(content, url)
                         analyze_response.correlation_id = correlation_id
 
                         # Publish AnalyzeResponse to results_queue

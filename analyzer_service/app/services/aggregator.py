@@ -22,10 +22,10 @@ async def analyze_all(content: str, url: str) -> AnalyzeResponse:
 
     # 1) Анализ текста
     text_result = await analyze_text(content)
-    response.frequency_distribution.extend(text_result["frequency_distribution"])
-    response.entities.extend(text_result["entities"])
-    response.sentiment.CopyFrom(text_result["sentiment"])
-    recommendations = text_result["recommendations"]  # частичный список рекомендаций
+    response.frequency_distribution.extend(text_result.frequency_distribution)
+    response.entities.extend(text_result.entities)
+    response.sentiment.CopyFrom(text_result.sentiment)
+    recommendations = list(text_result.recommendations)  # частичный список рекомендаций
 
     # 2) SEO-анализ
     seo_data, seo_recs = await analyze_seo(url)
@@ -54,5 +54,7 @@ async def analyze_all(content: str, url: str) -> AnalyzeResponse:
 
     # Собираем все рекомендации в один список
     response.recommendations.extend(recommendations)
+
+    logger.info(f"response: {response}")
 
     return response
