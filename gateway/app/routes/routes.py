@@ -136,25 +136,57 @@ async def process_message(message: aio_pika.IncomingMessage):
 
 async def update_results(correlation_id, analyze_response):
     async with AsyncSessionLocal() as session:
-        analysis_result = await session.execute(
+        result = await session.execute(
             select(AnalysisResult).where(
                 AnalysisResult.correlation_id == correlation_id
             )
         )
-        analysis = analysis_result.scalars().first()
+        analysis = result.scalars().first()
         if analysis:
+            # Проставляем новый статус
             analysis.status = "completed"
-            # Convert ScalarMapContainer to dict
-            analysis.frequency_distribution = dict(
-                analyze_response.frequency_distribution
-            )
+
+            # 1) frequency_distribution -> list или dict
+            #    Пример: сохраним в виде dict { key: value, ... }
+            analysis.frequency_distribution = {
+                fdist.key: fdist.value
+                for fdist in analyze_response.frequency_distribution
+            }
+
+            # 2) entities -> list of dict
             analysis.entities = [
                 MessageToDict(entity) for entity in analyze_response.entities
             ]
+
+            # 3) sentiment -> dict
+            analysis.sentiment = MessageToDict(analyze_response.sentiment)
+
+            # 4) seo_data -> dict
+            analysis.seo_data = MessageToDict(analyze_response.seo_data)
+
+            # 5) performance_data -> dict
+            analysis.performance_data = MessageToDict(analyze_response.performance_data)
+
+            # 6) accessibility_data -> dict
+            analysis.accessibility_data = MessageToDict(
+                analyze_response.accessibility_data
+            )
+
+            # 7) security_data -> dict
+            analysis.security_data = MessageToDict(analyze_response.security_data)
+
+            # 8) structure_data -> dict
+            analysis.structure_data = MessageToDict(analyze_response.structure_data)
+
+            # 9) recommendations -> list of dict
+            analysis.recommendations = [
+                MessageToDict(rec) for rec in analyze_response.recommendations
+            ]
+
             await session.commit()
 
-            # Update cache in Redis
-            response = {
+            # Формируем dict для кэширования в Redis
+            response_dict = {
                 "status": analysis.status,
                 "seo_data": analysis.seo_data,
                 "performance_data": analysis.performance_data,
@@ -165,7 +197,8 @@ async def update_results(correlation_id, analyze_response):
                 "frequency_distribution": analysis.frequency_distribution,
                 "entities": analysis.entities,
             }
-            await redis.set(correlation_id, json.dumps(response), ex=3600)
+
+            await redis.set(correlation_id, json.dumps(response_dict), ex=3600)
             logger.info(f"Updated results for correlation_id: {correlation_id}")
         else:
             logger.warning(

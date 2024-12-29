@@ -5,7 +5,7 @@ import nltk
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from nltk.sentiment import SentimentIntensityAnalyzer
-from proto import analyzer_pb2_grpc, analyzer_pb2
+from proto import analyzer_pb2
 
 
 nltk.download("stopwords")
@@ -96,6 +96,12 @@ async def analyze_text(content):
         frequency_distribution = Counter(lemmatized_tokens)
         logger.debug(f"Frequency Distribution: {frequency_distribution}")
 
+        # Convert frequency distribution to protobuf format
+        frequency_distribution_entries = [
+            analyzer_pb2.FrequencyDistributionEntry(key=word, value=count)
+            for word, count in frequency_distribution.items()
+        ]
+
         # Извлечение сущностей с помощью spaCy
         entities = []
         if nlp:
@@ -113,13 +119,12 @@ async def analyze_text(content):
         logger.debug(f"Sentiment Scores: {sentiment_scores}")
 
         analyze_response = analyzer_pb2.AnalyzeResponse(
-            frequency_distribution=dict(frequency_distribution),
+            frequency_distribution=frequency_distribution_entries,
             entities=entities,
-            sentiment=analyzer_pb2.AnalyzeResponse.Sentiment(
-                positive=sentiment_scores.get("pos", 0.0),
-                negative=sentiment_scores.get("neg", 0.0),
-                neutral=sentiment_scores.get("neu", 0.0),
-                compound=sentiment_scores.get("compound", 0.0),
+            sentiment=analyzer_pb2.Sentiment(
+                positive=sentiment_scores["pos"],
+                negative=sentiment_scores["neg"],
+                neutral=sentiment_scores["neu"],
             ),
         )
 

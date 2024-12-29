@@ -28,6 +28,7 @@ class AnalyzerServicer(analyzer_pb2_grpc.AnalyzerServiceServicer):
         try:
             analyze_response = await analyze_all(content, url)
             analyze_response.correlation_id = correlation_id
+
             return analyze_response
 
         except Exception as e:

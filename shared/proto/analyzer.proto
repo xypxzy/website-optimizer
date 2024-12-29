@@ -22,7 +22,7 @@ message Sentiment {
   double positive = 1;
   double negative = 2;
   double neutral = 3;
-  double compound = 4;
+  // double compound = 4;
 }
 
 message SEOData {
