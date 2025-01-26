@@ -1,55 +1,30 @@
 import logging
-import spacy
 from collections import Counter
-import nltk
-from nltk.corpus import stopwords
-from nltk.tokenize import word_tokenize
-from nltk.sentiment import SentimentIntensityAnalyzer
-from proto import analyzer_pb2
+import re
 
-nltk.download("stopwords")
-nltk.download("vader_lexicon")
-nltk.download("punkt_tab")
+from transformers import pipeline, AutoTokenizer, AutoModelForTokenClassification
+from proto import analyzer_pb2
 
 logger = logging.getLogger(__name__)
 
-try:
-    nltk_stopwords_en = set(stopwords.words("english"))
-    nltk_stopwords_ru = set(stopwords.words("russian"))
-except LookupError as e:
-    logger.error(f"Error loading NLTK stopwords: {e}")
-    nltk_stopwords_en = set()
-    nltk_stopwords_ru = set()
-
-sia = SentimentIntensityAnalyzer()
-
-# Инициализация spaCy модели для NER (английский язык)
-try:
-    nlp_en = spacy.load("en_core_web_sm")
-    logger.info("spaCy English model loaded successfully.")
-except Exception as e:
-    logger.error(f"Failed to load spaCy English model: {e}")
-    nlp_en = None
-
-# Инициализация spaCy модели для NER (русский язык)
-try:
-    nlp_ru = spacy.load("ru_core_news_sm")
-    logger.info("spaCy Russian model loaded successfully.")
-except Exception as e:
-    logger.error(f"Failed to load spaCy Russian model: {e}")
-    nlp_ru = None
+# 1) Sentiment analyzer
+sentiment_pipeline = pipeline(
+    "text-classification", model="tabularisai/multilingual-sentiment-analysis"
+)
 
 
-def detect_language(content):
-    """Простая эвристика для определения языка текста."""
-    # Используем библиотеку langdetect для более точного определения языка
-    try:
-        from langdetect import detect
+ner_tokenizer = AutoTokenizer.from_pretrained("dslim/bert-base-NER")
+ner_model = AutoModelForTokenClassification.from_pretrained("dslim/bert-base-NER")
 
-        return detect(content)
-    except Exception as e:
-        logger.error(f"Language detection failed: {e}")
-        return "unknown"
+# 2) Named Entity Recognition (NER) analyzer
+ner_pipeline = pipeline(
+    "ner",
+    model=ner_model,
+    tokenizer=ner_tokenizer,
+)
+
+# Cписок простых стоп-слов (для примера)
+STOPWORDS = {"the", "a", "an", "is", "it", "and", "or", "of", "to", "in"}
 
 
 class TextAnalyzer:
@@ -62,8 +37,8 @@ class TextAnalyzer:
         self,
     ) -> tuple[analyzer_pb2.AnalyzeResponse, list[analyzer_pb2.Recommendation]]:
         """
-        Analyzes the text content and generates recommendations.
-        Returns (AnalyzeResponse, [Recommendation]).
+        Анализирует текст (частотное распределение, NER, тональность).
+        Возвращает (AnalyzeResponse, [Recommendation]).
         """
         try:
             self.analyze_frequency_distribution()
@@ -82,79 +57,55 @@ class TextAnalyzer:
         return self.text_data, self.recommendations
 
     def analyze_frequency_distribution(self):
-        # Определение языка текста
-        language = detect_language(self.content)
-        if language.startswith("ru"):
-            stopwords_set = nltk_stopwords_ru
-            nlp = nlp_ru
-            logger.debug("Detected language: Russian")
-        elif language.startswith("en"):
-            stopwords_set = nltk_stopwords_en
-            nlp = nlp_en
-            logger.debug("Detected language: English")
-        else:
-            stopwords_set = set()
-            nlp = None
-            logger.debug(f"Detected language: {language}")
+        # Упрощённая токенизация: разбиваем по не-буквенным символам, приводим к нижнему регистру
+        tokens = re.findall(r"[a-zA-Zа-яА-Я]+", self.content.lower())
 
-        # Токенизация текста
-        tokens = word_tokenize(self.content.lower())
-        logger.debug(f"Tokens: {tokens}")
+        # Фильтруем короткие слова, стоп-слова и т.д.
+        filtered_tokens = [t for t in tokens if len(t) > 1 and t not in STOPWORDS]
 
-        # Удаление стоп-слов и неалфавитных токенов
-        filtered_tokens = [
-            word for word in tokens if word.isalpha() and word not in stopwords_set
-        ]
-        logger.debug(f"Filtered Tokens: {filtered_tokens}")
+        # Считаем частоты
+        frequency_distribution = Counter(filtered_tokens)
 
-        # Лемматизация (при использовании spaCy)
-        if nlp:
-            doc = nlp(" ".join(filtered_tokens))
-            lemmatized_tokens = [token.lemma_ for token in doc]
-            logger.debug(f"Lemmatized Tokens: {lemmatized_tokens}")
-        else:
-            lemmatized_tokens = filtered_tokens
-
-        # Частотное распределение
-        frequency_distribution = Counter(lemmatized_tokens)
-        logger.debug(f"Frequency Distribution: {frequency_distribution}")
-
-        # Convert frequency distribution to protobuf format
-        frequency_distribution_entries = [
+        # Перекладываем в protobuf-формат
+        freq_entries = [
             analyzer_pb2.FrequencyDistributionEntry(key=word, value=count)
             for word, count in frequency_distribution.items()
         ]
-
-        self.text_data.frequency_distribution.extend(frequency_distribution_entries)
+        self.text_data.frequency_distribution.extend(freq_entries)
 
     def analyze_entities(self):
-        # Извлечение сущностей с помощью spaCy
-        entities = []
-        language = detect_language(self.content)
-        if language.startswith("ru"):
-            nlp = nlp_ru
-        elif language.startswith("en"):
-            nlp = nlp_en
-        else:
-            nlp = None
+        # Для Named Entity Recognition используем Hugging Face pipeline
+        # Применяем к исходному тексту (или куску, если очень большой)
+        ner_results = ner_pipeline(self.content[:5000])  # ограничим до 5000 символов
 
-        if nlp:
-            doc_full = nlp(self.content)
-            for ent in doc_full.ents:
-                entities.append(
-                    analyzer_pb2.AnalyzeResponse.Entity(name=ent.text, type=ent.label_)
-                )
-            logger.debug(f"Extracted Entities: {entities}")
-        else:
-            logger.warning("spaCy model not loaded. Skipping entity extraction.")
+        entities = []
+        for item in ner_results:
+            # item обычно содержит поля "entity_group", "word", "score" и т.д.
+            entity_name = item["word"]
+            entity_type = item["entity_group"]
+            entities.append(
+                analyzer_pb2.AnalyzeResponse.Entity(name=entity_name, type=entity_type)
+            )
 
         self.text_data.entities.extend(entities)
 
     def analyze_sentiment(self):
-        # Анализ тональности
-        sentiment_scores = sia.polarity_scores(self.content)
-        logger.debug(f"Sentiment Scores: {sentiment_scores}")
+        # Анализ тональности (sentiment-analysis)
+        # Для больших текстов иногда берут только первые N символов/предложений
+        sentiment_result = sentiment_pipeline(self.content[:3000])[0]
 
-        self.text_data.sentiment.positive = sentiment_scores["pos"]
-        self.text_data.sentiment.negative = sentiment_scores["neg"]
-        self.text_data.sentiment.neutral = sentiment_scores["neu"]
+        # sentiment_result может выглядеть как {'label': '4 stars', 'score': 0.65} (для выбранной модели)
+        # Сконвертируем в структуру analyzer_pb2.Sentiment
+        label = sentiment_result["label"].lower()
+        score = float(sentiment_result["score"])
+
+        # Условно сопоставим label -> positive/negative/neutral
+        # Пример: если label содержит "negative" -> negative=score
+        #         если label содержит "positive" -> positive=score
+        # Но т.к. в multi-class sentiment (1..5 stars) сложнее, сделаем упрощённо:
+        if "1 star" in label or "2 star" in label:
+            self.text_data.sentiment.negative = score
+        elif "4 star" in label or "5 star" in label:
+            self.text_data.sentiment.positive = score
+        else:
+            self.text_data.sentiment.neutral = score

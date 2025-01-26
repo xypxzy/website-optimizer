@@ -3,7 +3,8 @@ import logging
 from proto.analyzer_pb2 import AnalyzeResponse
 from .text_analyzer import TextAnalyzer
 from .seo_analyzer import SEOAnalyzer
-from .performance_analyzer import PerformanceAnalyzer
+
+# from .performance_analyzer import PerformanceAnalyzer
 from .accessibility_analyzer import AccessibilityAnalyzer
 from .security_analyzer import SecurityAnalyzer
 from .structure_analyzer import StructureAnalyzer
@@ -34,11 +35,11 @@ async def analyze_all(content: str, url: str) -> AnalyzeResponse:
     response.seo_data.CopyFrom(seo_data)
     recommendations.extend(seo_recs)
 
-    # 3) Performance analyzer
-    perf_analyzer = PerformanceAnalyzer(url)
-    perf_data, perf_recs = await perf_analyzer.analyze()
-    response.performance_data.CopyFrom(perf_data)
-    recommendations.extend(perf_recs)
+    # # 3) Performance analyzer
+    # perf_analyzer = PerformanceAnalyzer(url)
+    # perf_data, perf_recs = await perf_analyzer.analyze()
+    # response.performance_data.CopyFrom(perf_data)
+    # recommendations.extend(perf_recs)
 
     # 4) Accessibility analyzer
     a11y_analyzer = AccessibilityAnalyzer(url)

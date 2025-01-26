@@ -1,10 +1,7 @@
-# Stage 1: Build Stage
-FROM python:3.10-slim AS builder
+FROM python:3.12-slim
 
 # Install build dependencies
 RUN apt-get update && apt-get install -y \
-    build-essential \
-    gcc \
     libffi-dev \
     libssl-dev \
     wget \
@@ -16,10 +13,8 @@ WORKDIR /app
 
 # Install Python dependencies
 COPY requirements.txt .
-RUN pip wheel --no-cache-dir --no-deps --wheel-dir /app/wheels -r requirements.txt
-
-# Stage 2: Runtime Stage
-FROM python:3.10-slim
+RUN pip install --upgrade pip setuptools wheel
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Install runtime dependencies
 RUN apt-get update && apt-get install -y \
@@ -29,22 +24,11 @@ RUN apt-get update && apt-get install -y \
     libfontconfig1 \
     && rm -rf /var/lib/apt/lists/*
 
-# Set work directory
-WORKDIR /app
-
-# Copy wheels from builder
-COPY --from=builder /app/wheels /wheels
-RUN pip install --no-cache /wheels/*
-
-# Copy application code
 COPY . .
 
-# Set environment variables
 ENV PYTHONPATH=/app
 ENV GOOGLE_CHROME_BIN=/usr/bin/google-chrome
 
-# Expose gRPC port
 EXPOSE 50051
 
-# Run the application
 CMD ["python", "app/main.py"]
