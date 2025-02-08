@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package performance;
+
+message PerformanceData {
+  double page_load_time = 1;
+  double largest_contentful_paint = 2;
+  double cumulative_layout_shift = 3;
+  double first_input_delay = 4;
+}
+
+message PerformanceRequest {
+  string url = 1;
+  string correlation_id = 2;
+}
+
+service PerformanceAnalyzer {
+  rpc Analyze(PerformanceRequest) returns (PerformanceData);
+}
