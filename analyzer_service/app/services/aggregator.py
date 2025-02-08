@@ -36,10 +36,7 @@ async def analyze_all(content: str, url: str) -> AnalyzeResponse:
     recommendations.extend(seo_recs)
 
     # # 3) Performance analyzer
-    # perf_analyzer = PerformanceAnalyzer(url)
-    # perf_data, perf_recs = await perf_analyzer.analyze()
-    # response.performance_data.CopyFrom(perf_data)
-    # recommendations.extend(perf_recs)
+    # TODO: implement performance analyzer
 
     # 4) Accessibility analyzer
     a11y_analyzer = AccessibilityAnalyzer(url)

@@ -74,6 +74,20 @@ services:
       redis:
         condition: service_healthy
 
+  performance_service:
+    build: ./performance_service
+    container_name: performance_service
+    image: performance_service:latest
+    ports:
+      - '50053:50053'
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
   gateway:
     build: ./gateway
     container_name: gateway

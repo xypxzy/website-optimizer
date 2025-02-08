@@ -1,0 +1,25 @@
+{
+	"name": "performance_service",
+	"version": "1.0.0",
+	"type": "module",
+	"scripts": {
+		"start": "bun run src/server.ts",
+		"test": "bun test"
+	},
+	"devDependencies": {
+		"@types/bun": "latest",
+		"@types/cheerio": "^0.22.35",
+		"ts-protoc-gen": "^0.15.0"
+	},
+	"peerDependencies": {
+		"typescript": "^5.0.0"
+	},
+	"dependencies": {
+		"@grpc/grpc-js": "^1.12.5",
+		"@grpc/proto-loader": "^0.7.13",
+		"axios": "^1.7.9",
+		"cheerio": "^1.0.0",
+		"lighthouse": "^12.3.0",
+		"puppeteer": "^24.1.1"
+	}
+}
